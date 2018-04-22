@@ -24,6 +24,11 @@ mp.show_Xc_robust();
 mp.show_Xter();
 mp.show_Xter_robust();
 mp.show_tube();
+
+legend('Xc (state space constraint)', 'Xc - Z (robust space constraint)', 'Xter (terminal constraint)', 'Xter - Z (robust terminal constraint)', 'tube');
 mp.show_init_nominal_traj();
 mp.show_real_traj();
 mp.show_auto_limit();
+xlabel('x1');
+ylabel('x2');
+print(gcf,'-djpeg','-r300','sample.jpg')
