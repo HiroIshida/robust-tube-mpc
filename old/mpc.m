@@ -117,6 +117,14 @@ classdef mpc<handle
             obj.uc_max = max(obj.Uc.V, [], 1);
         end
         
+        function construct_basic_constraints(obj, Xc, Uc)
+            % make constraint in the form of Fx+Gu<=1
+        end
+        function add_constraint(obj, Xc, Uc)
+            % add constraint 
+        end
+        
+        
         function disturbance(obj, W_init)
             obj.W_real = W_init;
             obj.w_real_min = min(W_init.V, [], 1)';
