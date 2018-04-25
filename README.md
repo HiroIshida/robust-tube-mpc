@@ -44,12 +44,12 @@ tmpc.show_result();
 ```
 You can finally have the following results.
 <div align="center">
-<img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample2.jpg" alt="none" title="sample2" width="700">
+<img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample2.jpg" alt="none" title="sample2" width="500">
 </div>
 Now that you can see that the green nominal trajectory starting from the bottom left of the figure and surrounding a "tube". The blue plot means the real trajectory affected by the disturbance. You can see that this real trajectory never stick out from the "tube", and is robustly guided into the region [Xf-Z]. 
 </html>
 <div align="center">
-<img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample1.jpg" alt="none" title="sample1" width="700">
+<img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample1.jpg" alt="none" title="sample1" width="500">
 </div>
 Protecting that in a 3-dim fashion with a minus-time axis in the z-direction, you can easily get why we call that "tube". 
 
