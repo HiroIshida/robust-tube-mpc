@@ -1,0 +1,32 @@
+% tutorial for understanding optimal control with constraints
+
+% define plot_conv
+idx_proper = @(P) convhull(P.V(:,1), P.V(:,2));
+plot_conv = @(P, varargin) plot(P.V(idx_proper(P), 1), P.V(idx_proper(P), 2), varargin{1}, varargin{2}, varargin{3});
+
+% model and cost definition
+A = [1 1; 0 1]; B = [0.5; 1]; 
+Q = diag([1, 1]); R = 0.1;
+Xc_vertex = [5, -2; 5 2; -10 2; -10 -2];
+Uc_vertex = [0.1; -0.1]*10;
+Xc = Polyhedron(Xc_vertex);
+Uc = Polyhedron(Uc_vertex);
+N = 10;
+
+% simulation
+mp = OptimalControlBasis(A, B, Q, R, Xc, Uc, 10);
+x_init = [-5; 1];
+x = x_init;
+for t=1:20
+    [x_nominal, u_nominal] = mp.solve_OptimalControl(x);
+    u = u_nominal(:, 1);
+   w = rand(2, 1)*0.3-[0.15; 0.15];
+    x = A*x + B*u+w;
+    
+    clf;
+    plot_conv(Xc, 'r', 'Linewidth', 3); hold on;
+    plot_conv(mp.Xmpi, 'k', 'LineWidth', 3); hold on;
+    plot(x_nominal(1, :), x_nominal(2, :), 'go-', 'LineWidth', 2); hold on;
+    plot(x(1), x(2), 'b*', 'LineWidth', 2); hold on;
+    pause(0.5);
+end

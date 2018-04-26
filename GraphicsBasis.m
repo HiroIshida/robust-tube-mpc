@@ -68,7 +68,7 @@ classdef GraphicsBasis<handle
 
         function show_trajectory(obj, x_seq, varargin)
             switch numel(varargin)
-                case 1
+                case 1z
                     plot(x_seq(obj.axis1, :), x_seq(obj.axis2, :), varargin{1});
                 case 3
                     plot(x_seq(obj.axis1, :), x_seq(obj.axis2, :), varargin{1}, varargin{2}, varargin{3});     
