@@ -39,11 +39,22 @@ classdef OptimalControler < handle
             obj.construct_ineq_constraint(Xc, Uc);
             obj.compute_MPIset();
         end
+
+        function reconstruct_ineq_constraint(obj, Xc, Uc)
+            % naughty.. must be removed someday
+            obj.construct_ineq_constraint(Xc, Uc)
+        end
+
+        function remove_initial_eq_constraint(obj)
+            % this function will be used in tube model predictive control
+            obj.C_eq1 = obj.C_eq1(obj.sys.nx+1:size(obj.C_eq1, 1), 1:size(obj.C_eq1, 2));
+            obj.C_eq2 = @(x) zeros(size(obj.C_eq1, 1), 1);
+        end
         
         function add_terminal_constraint(obj, Xadd)
             add_ineq_constraint(obj, Xadd, obj.N+1);
         end
-        
+
         function add_initial_constraint(obj, Xadd)
             add_ineq_constraint(obj, Xadd, 1);
         end
@@ -135,7 +146,6 @@ classdef OptimalControler < handle
         
     end
     
-    %% Constraint Manipulation 
     methods (Access = protected)
         
         function add_ineq_constraint(obj, Xadd, k_add)

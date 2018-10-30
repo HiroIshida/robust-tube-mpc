@@ -1,78 +1,73 @@
-classdef TubeModelPredictiveControl < ModelPredictiveControl
+classdef TubeModelPredictiveControl
     
     properties (SetAccess = public)
-        Z % disturbance invariant set
+        sys % linear sys
+        optcon; % optimal contol solver object
+        Xc
+        Uc
         Xc_robust; % Xc-Z (Pontryagin diff.)
-        Uc_robust; % Uc-K*Z (Pontryagin diff.)
+        %Uc_robust; % Uc-K*Z (Pontryagin diff.)
+        W
+        Z % disturbance invariant set
         Xmpi_robust; % Xmpi-Z (Pontryagin diff.)
-        idx_enter; % outside or not of Xmpi_robust (if inside, just the LQR-control law is applied)
+        N
     end
     
     methods (Access = public)
-        function obj = TubeModelPredictiveControl(A, B, Q, R, Xc, Uc, W, N, x_init)
-            obj@ModelPredictiveControl(A, B, Q, R, Xc, Uc, W, N);
-            
+        function obj = TubeModelPredictiveControl(sys, Xc, Uc, W, N)
+            optcon = OptimalControler(sys, Xc, Uc, N)
             %----------approximation of d-inv set--------%
             alpha = 1.1;
-            obj.Z = (obj.W+obj.Ak*obj.W+obj.Ak^2*obj.W+obj.Ak^3*obj.W)*alpha;
-            
-            obj.Xc_robust = obj.Xc - obj.Z;
-            obj.Uc_robust = obj.Uc - obj.K*obj.Z;
-            obj.Xmpi_robust = obj.Xmpi - obj.Z;
-            obj.construct_ineq_constraint(obj.Xc_robust, obj.Uc_robust); % re-construction of inequality constraint
-            obj.add_terminal_constraint(obj.Xmpi_robust);
-            
-           %-------------buggy-start-------------------------%
-            obj.x_init = x_init;
-            obj.C_eq1 = obj.C_eq1(obj.nx+1:size(obj.C_eq1, 1), 1:size(obj.C_eq1, 2));
-            obj.C_eq2 = @(x) zeros(size(obj.C_eq1, 1), 1);
+            Z = (W+sys.Ak*W+sys.Ak^2*W+sys.Ak^3*W)*alpha;
+
+            %create robust X and U constraints, and construct solver using X and U
+            Xc_robust = Xc - Z;
+            Uc_robust = Uc - sys.K*Z;
+            optcon.reconstruct_ineq_constraint(Xc_robust, Uc_robust)
+
+            %robustize Xmpi set and set it as a terminal constraint
+            Xmpi_robust = optcon.Xmpi - Z;
+            optcon.add_terminal_constraint(Xmpi_robust);
+
+            %fill properteis
+            obj.sys = sys;
+            obj.optcon = optcon
+            obj.W = W;
+            obj.Xc = Xc;
+            obj.Uc = Uc;
+            obj.Xc_robust = Xc_robust;
+            obj.W = W
+            obj.Z = Z
+            obj.Xmpi_robust = Xmpi_robust
+            obj.N = N
+        end
+        
+        function [] = simulate(obj, Tsimu, x_init)
+            graph = Graphics();
+            obj.optcon.remove_initial_eq_constraint()
             Xinit = x_init+obj.Z;
-            obj.add_initial_constraint(Xinit);
-            %obj.show_convex(x_init+obj.Z, 'r')
-            %-------------buggy-end-------------------------%
-            obj.init();
-        end
-        
-        function [] = init(obj) % override
-            obj.flag_init = 1;
-            [x_seq, u_seq] = obj.solve_OptimalControl(obj.x_init);
-            obj.x_seq_nominal_init = x_seq;
-            obj.u_seq_nominal_init = u_seq;
+            obj.optcon.add_initial_constraint(Xinit);
+
+            [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init);
             
-            obj.idx_enter = obj.N;
-            for k=1:obj.N
-                if obj.Xmpi_robust.contains(x_seq(:, k))
-                    obj.idx_enter = k;
-                    break;
+            x = x_init;
+            x_seq_real = x;
+            u_seq_real = [];
+            propagate = @(x, u, w) obj.sys.A*x+obj.sys.B*u + w;
+            for i=1:Tsimu
+                u = u_nominal_seq(:, i) + obj.sys.K*(x-x_nominal_seq(:, i));
+                w = [0; 0];
+                x = propagate(x, u, w);
+                clf;
+                graph.show_convex(obj.Xc, 'm');
+                graph.show_convex(obj.Xc_robust, 'r');
+                graph.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
+                for j=1:obj.N+1
+                    graph.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
                 end
-            end
-        end
-        
-        function [] = simulation(obj, varargin)
-            
-            if numel(varargin) == 1
-                obj.init(varargin{1})
-            elseif obj.flag_init ==0
-                error('Error: Please specify the initial state, otherwise initialize object by init()')
-            end
-            
-            x = obj.x_init;
-            obj.x_seq_real = x;
-            obj.u_seq_real = [];
-            obj.time = 1;
-            for i=1:obj.N
-                %{
-                if i>=obj.idx_enter 
-                    u = obj.K*x; % LQR
-                else
-                    u = obj.u_seq_nominal_init(:, obj.time) + obj.K*(x-obj.x_seq_nominal_init(:, obj.time));
-                end
-                %}
-                u = obj.u_seq_nominal_init(:, obj.time) + obj.K*(x-obj.x_seq_nominal_init(:, obj.time));
-                x = obj.propagate(x, u);
-                obj.x_seq_real = [obj.x_seq_real, x];
-                obj.u_seq_real = [obj.u_seq_real, u];
-                obj.time = obj.time + 1;
+                graph.show_trajectory(x_nominal_seq, 'gs-');
+                graph.show_trajectory(x, 'b*-');
+                pause(0.2)
             end
             
         end
@@ -81,7 +76,7 @@ classdef TubeModelPredictiveControl < ModelPredictiveControl
             clf;
             obj.show_convex_timeslice(obj.Xc, -0.03, 'm');
             obj.show_convex_timeslice(obj.Xc_robust, -0.02, 'r');
-            obj.show_convex_timeslice(obj.Xmpi, -0.01, [0.2, 0.2, 0.2]*1.5);
+            obj.show_convex_timeslice(obj.optcon.Xmpi, -0.01, [0.2, 0.2, 0.2]*1.5);
             obj.show_convex_timeslice(obj.Xmpi_robust, -0.005, [0.5, 0.5, 0.5]);
             obj.show_convex_timeslice(obj.x_seq_nominal_init(:, 1)+obj.Z, obj.N, 'g', 'FaceAlpha', .3);
             

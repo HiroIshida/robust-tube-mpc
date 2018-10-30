@@ -2,7 +2,7 @@ classdef ModelPredictiveControl < handle
     
     properties (SetAccess = protected)
         sys % linear sys
-        optimal_controler; % optimal contol solver object
+        optcon; % optimal contol solver object
         Xc
         w_min; w_max; % lower and upper bound of system noise
         % each vector has the same dim as that of system
@@ -17,7 +17,7 @@ classdef ModelPredictiveControl < handle
         function obj = ModelPredictiveControl(sys, Xc, Uc, N, varargin)
             obj.sys = sys;
             obj.Xc = Xc
-            obj.optimal_controler = OptimalControler(sys, Xc, Uc, N);
+            obj.optcon = OptimalControler(sys, Xc, Uc, N);
             if numel(varargin)==2 % wanna write in Julia... 
                 obj.w_min = varargin{1}
                 obj.w_max = varargin{2}
@@ -31,13 +31,13 @@ classdef ModelPredictiveControl < handle
         function [] = simulate(obj, Tsimu, x_init)
             graph = Graphics();
             x = x_init;
-            [x_nominal_seq] = obj.optimal_controler.solve(x);
+            [x_nominal_seq] = obj.optcon.solve(x);
             x_seq_real = [x];
             u_seq_real = [];
             propagate = @(x, u, w) obj.sys.A*x+obj.sys.B*u + w;
             
             for i=1:Tsimu
-                [x_nominal_seq, u_nominal_seq] = obj.optimal_controler.solve(x);
+                [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x);
                 u = u_nominal_seq(:, 1);
                 w = randn(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
                 x = propagate(x, u, w);
@@ -45,7 +45,7 @@ classdef ModelPredictiveControl < handle
                 u_seq_real = [u_seq_real, u];
 
                 clf;
-                graph.show_convex(obj.Xc, 'r');
+                graph.show_convex(obj.Xc, 'm');
                 graph.show_trajectory(x_nominal_seq, 'gs-');
                 graph.show_trajectory(x, 'b*-');
                 pause(0.2)
@@ -57,7 +57,7 @@ classdef ModelPredictiveControl < handle
     methods (Access = protected)
         
         function input = compute_OptimalInput(obj, x)
-            [~, u_seq] = obj.optimal_controler.solve(x);
+            [~, u_seq] = obj.optcon.solve(x);
             input = u_seq(:, 1);
         end
     end
