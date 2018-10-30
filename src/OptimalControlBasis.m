@@ -1,18 +1,13 @@
 classdef OptimalControlBasis < handle
     
     properties (SetAccess = protected)
-        
-        A; B; % dynamics x[k+1] = A*x[k]+B*u[k]
-        nx; nu; % dim of state space and input space
-        Q; R; % quadratic stage cost for LQR
+        sys; %system
         Xc; Uc; % constraints set for statespace and input space
         x_min; x_max; % lower and upper bound of Xc
 
         nc; % number of contraint of Xc + Uc
         N; % prediction horizon
 
-        K; % LQR feedback coefficient vector: u=Kx
-        P; % optimal cost function of LQR is x'*P*x
         Ak; % S.T.M of closed-roop system with LQR feedback
         
                 
@@ -29,23 +24,15 @@ classdef OptimalControlBasis < handle
     %% Public Methods
     methods (Access = public)
         
-        function obj = OptimalControlBasis(A, B, Q, R, Xc, Uc, N)
-            obj.A = A;
-            obj.B = B;
-            obj.nx = size(A, 1);
-            obj.nu = size(B, 2);
-            obj.Q = Q;
-            obj.R = R;
+        function obj = OptimalControlBasis(sys, Xc, Uc, N)
+            obj.sys = sys
             obj.Xc = Xc;
             obj.x_min = min(Xc.V, [], 1)';
             obj.x_max = max(Xc.V, [], 2)';
             obj.Uc = Uc;
             obj.N = N;
             
-            [K_tmp, obj.P] = dlqr(obj.A, obj.B, obj.Q, obj.R);
-            obj.K = -K_tmp;
-            obj.Ak = (obj.A+obj.B*obj.K);
-            obj.n_opt = obj.nx*(obj.N+1)+obj.nu*obj.N;
+            obj.n_opt = obj.sys.nx*(obj.N+1)+obj.sys.nu*obj.N;
             
             obj.construct_costfunction();
             obj.construct_eq_constraint();
@@ -61,7 +48,7 @@ classdef OptimalControlBasis < handle
             add_ineq_constraint(obj, Xadd, 1);
         end
         
-        function [x_seq, u_seq] = solve_OptimalControl(obj, x_init)
+        function [x_seq, u_seq] = solve(obj, x_init)
             quadprog_solved = 0;
             C_neq1_relaxed = obj.C_neq1;
             options = optimoptions('quadprog', 'Display', 'none');
@@ -76,8 +63,8 @@ classdef OptimalControlBasis < handle
                     error('Not feasible');
                 end
             end
-            x_seq = reshape(var_optim(1:obj.nx*(obj.N+1)), obj.nx, obj.N+1);
-            u_seq = reshape(var_optim(obj.nx*(obj.N+1)+1:obj.n_opt), obj.nu, obj.N);
+            x_seq = reshape(var_optim(1:obj.sys.nx*(obj.N+1)), obj.sys.nx, obj.N+1);
+            u_seq = reshape(var_optim(obj.sys.nx*(obj.N+1)+1:obj.n_opt), obj.sys.nu, obj.N);
             
         end
         
@@ -91,10 +78,10 @@ classdef OptimalControlBasis < handle
             Q_block = [];
             R_block = [];
             for itr=1:obj.N
-                Q_block = blkdiag(Q_block, obj.Q);
-                R_block = blkdiag(R_block, obj.R);
+                Q_block = blkdiag(Q_block, obj.sys.Q);
+                R_block = blkdiag(R_block, obj.sys.R);
             end
-            obj.H = blkdiag(Q_block, obj.P, R_block);
+            obj.H = blkdiag(Q_block, obj.sys.P, R_block);
         end
         
         function construct_eq_constraint(obj)
@@ -102,13 +89,13 @@ classdef OptimalControlBasis < handle
             A_block = [];
             B_block = [];
             for itr=1:obj.N
-                A_block = blkdiag(A_block, obj.A);
-                B_block = blkdiag(B_block, obj.B);
+                A_block = blkdiag(A_block, obj.sys.A);
+                B_block = blkdiag(B_block, obj.sys.B);
             end            
-            C_dyn = [zeros(obj.nx, obj.n_opt);
-                A_block, zeros(obj.nx*obj.N, obj.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
-            obj.C_eq1 = eye(obj.nx*(obj.N+1), obj.n_opt) - C_dyn;
-            obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.nx, 1)]; 
+            C_dyn = [zeros(obj.sys.nx, obj.n_opt);
+                A_block, zeros(obj.sys.nx*obj.N, obj.sys.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
+            obj.C_eq1 = eye(obj.sys.nx*(obj.N+1), obj.n_opt) - C_dyn;
+            obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.sys.nx, 1)]; 
         end
        
         function construct_ineq_constraint(obj, Xc, Uc)
@@ -123,7 +110,7 @@ classdef OptimalControlBasis < handle
             for itr = 1:obj.N+1
                 F_block = blkdiag(F_block, F);
             end
-            obj.C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.nu*obj.N)]];
+            obj.C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.sys.nu*obj.N)]];
             obj.nc_total = size(obj.C_neq1, 1);
             obj.C_neq2 = ones(obj.nc_total, 1);
         end
@@ -131,7 +118,7 @@ classdef OptimalControlBasis < handle
         function compute_MPIset(obj)
             % MPIset is computed only once in the constructor;
             [F, G, obj.nc] = obj.convert_Poly2Mat(obj.Xc, obj.Uc);
-            Fpi = @(i) (F+G*obj.K)*obj.Ak^i;
+            Fpi = @(i) (F+G*obj.sys.K)*obj.sys.Ak^i;
             Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i), 1), 1));
             obj.Xmpi = Xpi(0);
             i= 0;
@@ -164,7 +151,7 @@ classdef OptimalControlBasis < handle
             end
             
             block_add = zeros(nc_add, obj.n_opt);
-            block_add(:, (k_add-1)*obj.nx+1:k_add*obj.nx) = F_add;
+            block_add(:, (k_add-1)*obj.sys.nx+1:k_add*obj.sys.nx) = F_add;
             
             obj.C_neq1 = [obj.C_neq1;
                 block_add];
@@ -177,13 +164,13 @@ classdef OptimalControlBasis < handle
             F_tmp = OptimalControlBasis.poly2ineq(X);
             G_tmp = OptimalControlBasis.poly2ineq(U);
             if numel(F_tmp)==0
-                F_tmp = zeros(0, obj.nx);
+                F_tmp = zeros(0, obj.sys.nx);
             end
             if numel(G_tmp)==0
-                G_tmp = zeros(0, obj.nu);
+                G_tmp = zeros(0, obj.sys.nu);
             end
-            F = [F_tmp; zeros(size(G_tmp, 1), obj.nx)];
-            G = [zeros(size(F_tmp, 1), obj.nu); G_tmp];
+            F = [F_tmp; zeros(size(G_tmp, 1), obj.sys.nx)];
+            G = [zeros(size(F_tmp, 1), obj.sys.nu); G_tmp];
             nc = size(F, 1);
         end
         
