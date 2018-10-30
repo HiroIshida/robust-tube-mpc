@@ -10,9 +10,11 @@ Uc_vertex = [1; -1];
 Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
-mpc = ModelPredictiveControl(mysys, Xc, Uc, 20);
+w_min = [0; -0.06];
+w_max = [0; 0.05];
+mpc = ModelPredictiveControl(mysys, Xc, Uc, 3, w_min, w_max);
 x_init = [-7; -2];
-mpc.simulation(20, x_init);
+mpc.simulate(30, x_init);
 
 
 %{

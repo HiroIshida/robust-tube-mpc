@@ -1,4 +1,5 @@
-classdef GraphicsBasis<handle
+classdef Graphics<handle
+    % This is a functino collection rather than a class
     % plot trajectory and show convex set which are projected from n-dim
     % space to 2-dim space spanned by axis1 and axis2.
     % Users can specify axis1 and axis2.
@@ -10,7 +11,7 @@ classdef GraphicsBasis<handle
     
     methods (Access = public)
         
-        function obj = GraphicsBasis(varargin)
+        function obj = Graphics(varargin)
             switch nargin
                 case 0
                     obj.axis1 = 1;

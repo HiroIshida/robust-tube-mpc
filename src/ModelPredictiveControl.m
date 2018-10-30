@@ -1,4 +1,4 @@
-classdef ModelPredictiveControl < GraphicsBasis
+classdef ModelPredictiveControl < handle
     
     properties (SetAccess = protected)
         sys % linear sys
@@ -8,7 +8,6 @@ classdef ModelPredictiveControl < GraphicsBasis
         % each vector has the same dim as that of system
 
         
-        x_init; % initial state vector
         x_seq_nominal_init; % nominal optimal trajectory computed from x_init
         u_seq_nominal_init; % nominal optimal input-sequence computed from x_init
         
@@ -27,7 +26,6 @@ classdef ModelPredictiveControl < GraphicsBasis
     methods (Access = public)
         
         function obj = ModelPredictiveControl(sys, Xc, Uc, N, varargin)
-            obj@GraphicsBasis();
             obj.sys = sys;
             obj.Xc = Xc
             obj.optimal_controler = OptimalControler(sys, Xc, Uc, N);
@@ -41,36 +39,30 @@ classdef ModelPredictiveControl < GraphicsBasis
             end
         end
         
-        function [] = init(obj, x_init)
-            obj.flag_init = 1;
-            obj.x_init = x_init;
-            [x_seq, u_seq] = obj.optimal_controler.solve(x_init);
-            obj.x_seq_nominal_init = x_seq;
-            obj.u_seq_nominal_init = u_seq;
-        end
-        
-        function [] = simulation(obj, Tsimu, x_init)
-            x_init
-            obj.init(x_init)
-            
-            x = obj.x_init;
-            obj.x_seq_real = x;
-            obj.u_seq_real = [];
+        function [] = simulate(obj, Tsimu, x_init)
+            graph = Graphics();
+            x = x_init;
+            [x_nominal_seq] = obj.optimal_controler.solve(x);
+            x_seq_real = [x];
+            u_seq_real = [];
             obj.time = 1;
             propagate = @(x, u, w) obj.sys.A*x+obj.sys.B*u + w;
             
             for i=1:Tsimu
-                u = obj.compute_OptimalInput(x);
+                [x_nominal_seq, u_nominal_seq] = obj.optimal_controler.solve(x);
+                u = u_nominal_seq(:, 1);
                 w = randn(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
                 x = propagate(x, u, w);
-                obj.x_seq_real = [obj.x_seq_real, x];
-                obj.u_seq_real = [obj.u_seq_real, u];
+                x_seq_real = [x_seq_real, x];
+                u_seq_real = [u_seq_real, u];
                 obj.time = obj.time + 1;
+
+                clf;
+                graph.show_convex(obj.Xc, 'r');
+                graph.show_trajectory(x_nominal_seq, 'gs-');
+                graph.show_trajectory(x, 'b*-');
+                pause(0.2)
             end
-            clf;
-            obj.show_convex(obj.Xc, 'r');
-            obj.show_trajectory(obj.x_seq_nominal_init, 'gs-');
-            obj.show_trajectory(obj.x_seq_real, 'b*-');
         end
         
     end
