@@ -6,17 +6,6 @@ classdef ModelPredictiveControl < handle
         Xc
         w_min; w_max; % lower and upper bound of system noise
         % each vector has the same dim as that of system
-
-        
-        x_seq_nominal_init; % nominal optimal trajectory computed from x_init
-        u_seq_nominal_init; % nominal optimal input-sequence computed from x_init
-        
-        Tsimu; % simulation time span
-
-        x_seq_real; % accumulation of the real x's sequence
-        u_seq_real; % accumulation of the real u's sequence
-        
-        time; % current time step
     end
     
     properties (Access = protected)
@@ -33,7 +22,7 @@ classdef ModelPredictiveControl < handle
                 obj.w_min = varargin{1}
                 obj.w_max = varargin{2}
 
-            else % no arguments sets no system noise
+            else % if no arguments, no system noise
                 obj.w_min = zeros(2, 1)
                 obj.w_max = zeros(2, 1)
             end
@@ -45,7 +34,6 @@ classdef ModelPredictiveControl < handle
             [x_nominal_seq] = obj.optimal_controler.solve(x);
             x_seq_real = [x];
             u_seq_real = [];
-            obj.time = 1;
             propagate = @(x, u, w) obj.sys.A*x+obj.sys.B*u + w;
             
             for i=1:Tsimu
@@ -55,7 +43,6 @@ classdef ModelPredictiveControl < handle
                 x = propagate(x, u, w);
                 x_seq_real = [x_seq_real, x];
                 u_seq_real = [u_seq_real, u];
-                obj.time = obj.time + 1;
 
                 clf;
                 graph.show_convex(obj.Xc, 'r');
