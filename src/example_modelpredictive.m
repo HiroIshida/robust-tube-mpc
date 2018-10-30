@@ -1,15 +1,18 @@
 addpath('./src')
-A = [1 1; 0 1]; B = [0.5; 1]; 
-Q = diag([1, 1]); R = 0.1;
-
+A = [1 1; 0 1];
+B = [0.5; 1]; 
+Q = diag([1, 1]);
+R = 0.1;
+mysys = LinearSystem(A, B, Q, R);
 
 Xc_vertex = [2, -2; 2 2; -10 2; -10 -2];
 Uc_vertex = [1; -1];
+Xc = Polyhedron(Xc_vertex);
+Uc = Polyhedron(Uc_vertex);
 
-opt = ModelPredictiveControl(A, B, Q, R, Xc, Uc, 20)
-x_init = [-7; -2]
-opt.simulation(30, x_init)
-
+mpc = ModelPredictiveControl(mysys, Xc, Uc, 20);
+x_init = [-7; -2];
+mpc.simulation(20, x_init);
 
 
 %{
