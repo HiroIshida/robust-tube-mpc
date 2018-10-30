@@ -1,3 +1,4 @@
+addpath('./utils')
 addpath('./src')
 A = [1 1; 0 1];
 B = [0.5; 1]; 

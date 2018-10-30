@@ -111,7 +111,7 @@ classdef OptimalControler < handle
        
         function construct_ineq_constraint(obj, Xc, Uc)
             % compute C_neq
-            [F, G, obj.nc] = obj.convert_Poly2Mat(Xc, Uc);
+            [F, G, obj.nc] = convert_Poly2Mat(Xc, Uc);
             
             F_block = [];
             G_block = [];
@@ -128,7 +128,7 @@ classdef OptimalControler < handle
         
         function compute_MPIset(obj)
             % MPIset is computed only once in the constructor;
-            [F, G, obj.nc] = obj.convert_Poly2Mat(obj.Xc, obj.Uc);
+            [F, G, obj.nc] = convert_Poly2Mat(obj.Xc, obj.Uc);
             Fpi = @(i) (F+G*obj.sys.K)*obj.sys.Ak^i;
             Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i), 1), 1));
             obj.Xmpi = Xpi(0);
@@ -151,7 +151,7 @@ classdef OptimalControler < handle
         function add_ineq_constraint(obj, Xadd, k_add)
             % add a new constraint at time step k 
             if Xadd.contains(zeros(2, 1)) % If Xadd contains the origin, the contraint can be expressed as C1*x<=1
-                [F_add, ~, nc_add] = obj.convert_Poly2Mat(Xadd, Polyhedron());
+                [F_add, ~, nc_add] = convert_Poly2Mat(Xadd, Polyhedron());
                 obj.C_neq2 = [obj.C_neq2; ones(nc_add, 1)];
                 
             else % in other cases, expressed in a general affine form C1*x<=C2
@@ -167,25 +167,6 @@ classdef OptimalControler < handle
                 block_add];
             obj.nc = obj.nc + nc_add;
         end
-        
-        function [F, G, nc] = convert_Poly2Mat(obj, X, U)
-            % Constraints set X and U in Polyhedron form -> F, G matrix form
-            %F; G; % constraints for state and input: Fx+Gu<=1, where 1 is a voctor
-            poly2ineq = @(poly) poly.A./repmat(poly.b, 1, size(poly.A, 2));
-            F_tmp = poly2ineq(X);
-            G_tmp = poly2ineq(U);
-            if numel(F_tmp)==0
-                F_tmp = zeros(0, obj.sys.nx);
-            end
-            if numel(G_tmp)==0
-                G_tmp = zeros(0, obj.sys.nu);
-            end
-            F = [F_tmp; zeros(size(G_tmp, 1), obj.sys.nx)];
-            G = [zeros(size(F_tmp, 1), obj.sys.nu); G_tmp];
-            nc = size(F, 1);
-        end
-        
-
         
     end
 end
