@@ -10,7 +10,7 @@ Uc_vertex = [1; -1];
 Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
-opt = OptimalControlBasis(mysys, Xc, Uc, 20)
+opt = OptimalControler(mysys, Xc, Uc, 20)
 
 
 x_init = [-7; -2]

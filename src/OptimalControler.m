@@ -1,4 +1,4 @@
-classdef OptimalControlBasis < handle
+classdef OptimalControler < handle
     
     properties (SetAccess = protected)
         sys; %system
@@ -24,7 +24,7 @@ classdef OptimalControlBasis < handle
     %% Public Methods
     methods (Access = public)
         
-        function obj = OptimalControlBasis(sys, Xc, Uc, N)
+        function obj = OptimalControler(sys, Xc, Uc, N)
             obj.sys = sys
             obj.Xc = Xc;
             obj.x_min = min(Xc.V, [], 1)';
