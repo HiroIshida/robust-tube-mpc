@@ -161,8 +161,9 @@ classdef OptimalControler < handle
         function [F, G, nc] = convert_Poly2Mat(obj, X, U)
             % Constraints set X and U in Polyhedron form -> F, G matrix form
             %F; G; % constraints for state and input: Fx+Gu<=1, where 1 is a voctor
-            F_tmp = OptimalControlBasis.poly2ineq(X);
-            G_tmp = OptimalControlBasis.poly2ineq(U);
+            poly2ineq = @(poly) poly.A./repmat(poly.b, 1, size(poly.A, 2));
+            F_tmp = poly2ineq(X);
+            G_tmp = poly2ineq(U);
             if numel(F_tmp)==0
                 F_tmp = zeros(0, obj.sys.nx);
             end
@@ -177,14 +178,5 @@ classdef OptimalControler < handle
 
         
     end
-    
-    %% Static Methods
-    methods(Static)
-        
-        function Cneq = poly2ineq(poly)
-            Cneq  = poly.A./repmat(poly.b, 1, size(poly.A, 2));
-        end
-        
-                
-    end
 end
+
