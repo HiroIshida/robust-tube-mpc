@@ -19,7 +19,7 @@ w_min = [0; -0.06];
 w_max = [0; 0.05];
 mpc = TubeModelPredictiveControl(mysys, Xc, Uc, W, N);
 x_init = [-7; -2];
-mpc.simulate(10, x_init);
+mpc.simulate(20, x_init);
 
 
 
