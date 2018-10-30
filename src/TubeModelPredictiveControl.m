@@ -24,8 +24,8 @@ classdef TubeModelPredictiveControl < ModelPredictiveControl
             
            %-------------buggy-start-------------------------%
             obj.x_init = x_init;
-            obj.C_eq1 = obj.C_eq1(obj.nx+1:size(obj.C_eq1)*[1; 0], 1:size(obj.C_eq1)*[0; 1]);
-            obj.C_eq2 = @(x) zeros(size(obj.C_eq1)*[1;0], 1);
+            obj.C_eq1 = obj.C_eq1(obj.nx+1:size(obj.C_eq1, 1), 1:size(obj.C_eq1, 2));
+            obj.C_eq2 = @(x) zeros(size(obj.C_eq1, 1), 1);
             Xinit = x_init+obj.Z;
             obj.add_initial_constraint(Xinit);
             %obj.show_convex(x_init+obj.Z, 'r')

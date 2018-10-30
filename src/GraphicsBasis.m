@@ -41,7 +41,7 @@ classdef GraphicsBasis<handle
 
         function show_convex_timeslice(obj, P, z_axis, varargin)
             P_reduced = obj.projectPolytope2Plane(P);
-            num_vertex = size(P_reduced.V)*[1; 0];
+            num_vertex = size(P_reduced.V, 1);
             vertex_3d = [P_reduced.V, z_axis*ones(num_vertex, 1)];
             switch numel(varargin)
                 case 1
@@ -58,7 +58,7 @@ classdef GraphicsBasis<handle
            S2_reduced = obj.projectPolytope2Plane(S2);
            V1 = S1_reduced.V;
            V2 = S2_reduced.V;
-           num_vert = size(V1)*[1; 0];
+           num_vert = size(V1, 1);
            for i = 1:num_vert
                plot3([V1(i, 1); V2(i, 1)], [V1(i, 2); V2(i, 2)], [h1, h2], varargin{1})  
            end
@@ -77,7 +77,7 @@ classdef GraphicsBasis<handle
         end
         
         function show_trajectory_timeslice(obj, x_seq, varargin)
-            num_xseq = size(x_seq)*[0; 1];
+            num_xseq = size(x_seq, 2);
             x_seq_3d = [x_seq(obj.axis1, :); x_seq(obj.axis2, :); flip(0:(num_xseq-1))];
             switch numel(varargin)
                 case 1

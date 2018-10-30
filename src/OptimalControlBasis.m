@@ -32,8 +32,8 @@ classdef OptimalControlBasis < handle
         function obj = OptimalControlBasis(A, B, Q, R, Xc, Uc, N)
             obj.A = A;
             obj.B = B;
-            obj.nx = size(A)*[1; 0];
-            obj.nu = size(B)*[0; 1];
+            obj.nx = size(A, 1);
+            obj.nu = size(B, 2);
             obj.Q = Q;
             obj.R = R;
             obj.Xc = Xc;
@@ -108,7 +108,7 @@ classdef OptimalControlBasis < handle
             C_dyn = [zeros(obj.nx, obj.n_opt);
                 A_block, zeros(obj.nx*obj.N, obj.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
             obj.C_eq1 = eye(obj.nx*(obj.N+1), obj.n_opt) - C_dyn;
-            obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1)*[1; 0]-obj.nx, 1)]; 
+            obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.nx, 1)]; 
         end
        
         function construct_ineq_constraint(obj, Xc, Uc)
@@ -124,7 +124,7 @@ classdef OptimalControlBasis < handle
                 F_block = blkdiag(F_block, F);
             end
             obj.C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.nu*obj.N)]];
-            obj.nc_total = size(obj.C_neq1)*[1; 0];
+            obj.nc_total = size(obj.C_neq1, 1);
             obj.C_neq2 = ones(obj.nc_total, 1);
         end
         
@@ -132,7 +132,7 @@ classdef OptimalControlBasis < handle
             % MPIset is computed only once in the constructor;
             [F, G, obj.nc] = obj.convert_Poly2Mat(obj.Xc, obj.Uc);
             Fpi = @(i) (F+G*obj.K)*obj.Ak^i;
-            Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i))*[1; 0], 1));
+            Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i), 1), 1));
             obj.Xmpi = Xpi(0);
             i= 0;
             while(1) % 
@@ -159,7 +159,7 @@ classdef OptimalControlBasis < handle
                 
             else % in other cases, expressed in a general affine form C1*x<=C2
                 F_add = Xadd.A;
-                nc_add = size(F_add)*[1; 0];
+                nc_add = size(F_add, 1);
                 obj.C_neq2 = [obj.C_neq2; Xadd.b];
             end
             
@@ -182,9 +182,9 @@ classdef OptimalControlBasis < handle
             if numel(G_tmp)==0
                 G_tmp = zeros(0, obj.nu);
             end
-            F = [F_tmp; zeros(size(G_tmp)*[1; 0], obj.nx)];
-            G = [zeros(size(F_tmp)*[1; 0], obj.nu); G_tmp];
-            nc = size(F)*[1; 0];
+            F = [F_tmp; zeros(size(G_tmp, 1), obj.nx)];
+            G = [zeros(size(F_tmp, 1), obj.nu); G_tmp];
+            nc = size(F, 1);
         end
         
 
@@ -195,7 +195,7 @@ classdef OptimalControlBasis < handle
     methods(Static)
         
         function Cneq = poly2ineq(poly)
-            Cneq  = poly.A./repmat(poly.b, 1, size(poly.A)*[0; 1]);
+            Cneq  = poly.A./repmat(poly.b, 1, size(poly.A, 2));
         end
         
                 
