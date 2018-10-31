@@ -5,6 +5,7 @@ classdef TubeModelPredictiveControl
         optcon; % optimal contol solver object
         Xc
         Uc
+        w_min; w_max;
         Xc_robust; % Xc-Z (Pontryagin diff.)
         %Uc_robust; % Uc-K*Z (Pontryagin diff.)
         W
@@ -40,6 +41,8 @@ classdef TubeModelPredictiveControl
             obj.Z = Z
             obj.Xmpi_robust = Xmpi_robust
             obj.N = N
+            obj.w_max = w_max
+            obj.w_min = w_min
         end
         
         function [] = simulate(obj, Tsimu, x_init)
@@ -61,7 +64,7 @@ classdef TubeModelPredictiveControl
                 else 
                     u = obj.sys.K*x;
                 end
-                w = [0; 0];
+                w = randn(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
                 x = propagate(x, u, w);
                 x_real_seq = [x_real_seq, x];
                 u_real_seq = [u_real_seq, u];

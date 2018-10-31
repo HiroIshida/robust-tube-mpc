@@ -54,12 +54,4 @@ classdef ModelPredictiveControl < handle
         
     end
     
-    methods (Access = protected)
-        
-        function input = compute_OptimalInput(obj, x)
-            [~, u_seq] = obj.optcon.solve(x);
-            input = u_seq(:, 1);
-        end
-    end
-    
 end
