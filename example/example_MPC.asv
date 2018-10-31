@@ -13,10 +13,10 @@ Uc_vertex = [1; -1];
 Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
-% Unlike tube-MPC, this generic MPC doesn't guarantee the robustness. So if you
+% Of course, unthis generic MPC doesn't guarantee the robustness. So if you
 % add some noise (determined by w_min and w_max), and running the simulation 
 % multiple times the state may hit the constraint Xc sometimes, which results in error.
-% Please do some experiments.
+% 
 w_min = [0; -0.06];
 w_max = [0; 0.05];
 mpc = ModelPredictiveControl(mysys, Xc, Uc, 3, w_min, w_max);
