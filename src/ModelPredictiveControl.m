@@ -29,7 +29,6 @@ classdef ModelPredictiveControl < handle
         end
         
         function [] = simulate(obj, Tsimu, x_init)
-            graph = Graphics();
             x = x_init;
             [x_nominal_seq] = obj.optcon.solve(x);
             x_seq_real = [x];
@@ -45,9 +44,9 @@ classdef ModelPredictiveControl < handle
                 u_seq_real = [u_seq_real, u];
 
                 clf;
-                graph.show_convex(obj.Xc, 'm');
-                graph.show_trajectory(x_nominal_seq, 'gs-');
-                graph.show_trajectory(x, 'b*-');
+                Graphics.show_convex(obj.Xc, 'm');
+                Graphics.show_trajectory(x_nominal_seq, 'gs-');
+                Graphics.show_trajectory(x, 'b*-');
                 pause(0.2)
             end
         end

@@ -46,7 +46,6 @@ classdef TubeModelPredictiveControl
         end
         
         function [] = simulate(obj, Tsimu, x_init)
-            graph = Graphics();
             obj.optcon.remove_initial_eq_constraint()
             Xinit = x_init+obj.Z;
             obj.optcon.add_initial_constraint(Xinit);
@@ -70,32 +69,32 @@ classdef TubeModelPredictiveControl
                 u_real_seq = [u_real_seq, u];
 
                 clf; % real time plot
-                graph.show_convex(obj.Xc, 'm');
-                graph.show_convex(obj.Xc_robust, 'r');
-                graph.show_convex(obj.optcon.Xmpi, [0.2, 0.2, 0.2]*1.5);
-                graph.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
+                Graphics.show_convex(obj.Xc, 'm');
+                Graphics.show_convex(obj.Xc_robust, 'r');
+                Graphics.show_convex(obj.optcon.Xmpi, [0.2, 0.2, 0.2]*1.5);
+                Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
                 for j=1:obj.N+1
-                    graph.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
+                    Graphics.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
                 end
-                graph.show_trajectory(x_nominal_seq, 'gs-');
-                graph.show_trajectory(x, 'b*-');
+                Graphics.show_trajectory(x_nominal_seq, 'gs-');
+                Graphics.show_trajectory(x, 'b*-');
                 pause(0.2)
             end
 
             % time slice plot after simulation
             figure(2)
-            graph.show_convex_timeslice(obj.Xc, -0.04, 'm');
-            graph.show_convex_timeslice(obj.Xc_robust, -0.03, 'r');
-            graph.show_convex_timeslice(obj.optcon.Xmpi, -0.02, [0.2, 0.2, 0.2]*1.5);
-            graph.show_convex_timeslice(obj.Xmpi_robust, -0.01, [0.5, 0.5, 0.5]);
-            graph.show_convex_timeslice(x_nominal_seq(:, 1)+obj.Z, obj.N, 'g', 'FaceAlpha', .3);
-            graph.show_trajectory_timeslice(x_nominal_seq, 'gs-', 'LineWidth', 1.2);
-            graph.show_trajectory_timeslice(x_real_seq(:, 1:obj.N+1), 'b*-', 'LineWidth', 1.2);
+            Graphics.show_convex_timeslice(obj.Xc, -0.04, 'm');
+            Graphics.show_convex_timeslice(obj.Xc_robust, -0.03, 'r');
+            Graphics.show_convex_timeslice(obj.optcon.Xmpi, -0.02, [0.2, 0.2, 0.2]*1.5);
+            Graphics.show_convex_timeslice(obj.Xmpi_robust, -0.01, [0.5, 0.5, 0.5]);
+            Graphics.show_convex_timeslice(x_nominal_seq(:, 1)+obj.Z, obj.N, 'g', 'FaceAlpha', .3);
+            Graphics.show_trajectory_timeslice(x_nominal_seq, 'gs-', 'LineWidth', 1.2);
+            Graphics.show_trajectory_timeslice(x_real_seq(:, 1:obj.N+1), 'b*-', 'LineWidth', 1.2);
             leg = legend('$X_c$', '$X_c\ominus Z$', '$X_f (= X_{MPI})$', '$X_f\ominus Z$', 'Tube', 'Nominal', 'Real');
             set(leg, 'Interpreter', 'latex')
             
             for i=2:obj.N+1 % show remaining tubes.
-                    graph.show_convex_timeslice(x_nominal_seq(:, i)+obj.Z, obj.N-i+1, 'g', 'FaceAlpha', .3);
+                    Graphics.show_convex_timeslice(x_nominal_seq(:, i)+obj.Z, obj.N-i+1, 'g', 'FaceAlpha', .3);
             end
             
             xlabel('x1');
