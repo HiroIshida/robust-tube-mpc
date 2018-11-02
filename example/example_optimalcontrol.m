@@ -8,7 +8,7 @@ Q = diag([1, 1]);
 R = 0.1;
 mysys = LinearSystem(A, B, Q, R); 
 
-% constraints on position Xc and velocity Uc
+% constraints on 2dim state Xc and 1dim input Uc
 Xc_vertex = [2, -2; 2 2; -10 2; -10 -2];
 Uc_vertex = [1; -1];
 Xc = Polyhedron(Xc_vertex);
