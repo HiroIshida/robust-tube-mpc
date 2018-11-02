@@ -1,23 +1,17 @@
 classdef OptimalControler < handle
     
-    properties (SetAccess = protected)
+    properties (SetAccess = private)
         sys; %system
         Xc; Uc; % constraints set for statespace and input space
         x_min; x_max; % lower and upper bound of Xc
-
         nc; % number of contraint of Xc + Uc
         N; % prediction horizon
-
         Ak; % S.T.M of closed-roop system with LQR feedback
-        
-                
         n_opt; % dim. of optimization parameter
         nc_total; % number of all ineq. constraints 
-
         H; % quadratic const V to be minimized here will be expressed as V = s'*H*s, where s:=[x(0), .., x(n-1), x(n), u(0)....u(n-1)].
         C_eq1; C_eq2; % equality constraints are defined as C_eq1*s =C_eq2; C_eq2 is a function object 
         C_neq1; C_neq2; % inequality constraints are defined as C_neq*s<=1 (1 is a vector)
-
         Xmpi; % Maximum Positively Invariant set.
     end
     
@@ -82,7 +76,7 @@ classdef OptimalControler < handle
     end
     
     %% Methods Used in Constoructor
-    methods (Access = protected)
+    methods (Access = private)
         
         function construct_costfunction(obj)
             % compute H
@@ -146,7 +140,7 @@ classdef OptimalControler < handle
         
     end
     
-    methods (Access = protected)
+    methods (Access = private)
         
         function add_ineq_constraint(obj, Xadd, k_add)
             % add a new constraint at time step k 

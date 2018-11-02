@@ -104,11 +104,8 @@ classdef TubeModelPredictiveControl
             ylim([obj.optcon.x_min(2), obj.optcon.x_max(2)]);
             zlim([-0.05, obj.N]);
             set( gca, 'FontSize',12); 
-            %view([0, 90]);
             view([10, 10])
             grid on;
-
         end
-        
     end
 end

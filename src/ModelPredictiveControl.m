@@ -1,15 +1,11 @@
 classdef ModelPredictiveControl < handle
     
-    properties (SetAccess = protected)
+    properties (SetAccess = private)
         sys % linear sys
         optcon; % optimal contol solver object
         Xc
         w_min; w_max; % lower and upper bound of system noise
         % each vector has the same dim as that of system
-    end
-    
-    properties (Access = protected)
-        flag_init = 0;
     end
     
     methods (Access = public)
@@ -21,7 +17,6 @@ classdef ModelPredictiveControl < handle
             if numel(varargin)==2 % wanna write in Julia... 
                 obj.w_min = varargin{1}
                 obj.w_max = varargin{2}
-
             else % if no arguments, no system noise
                 obj.w_min = zeros(2, 1)
                 obj.w_max = zeros(2, 1)
@@ -50,7 +45,6 @@ classdef ModelPredictiveControl < handle
                 pause(0.2)
             end
         end
-        
     end
     
 end
