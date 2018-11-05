@@ -9,7 +9,7 @@ This repository includes examples for the tube model predictive control (tube-MP
 
 
 ## Usage
-See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively.
+See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively. Note that every inequality constraint here is expressed as a covex set. For example, the costraints on state Xc is specified as a rectangular, which is costructed with 4 vertexes. When considering a 1-dim input Uc, Uc will be specified by min and max value (i.e. u∊[u_min, u_max]), so it will be constructed by 2 vertexes. For more detail, please see the example codes.
 
 ## Short introduction to the tube MPC
 After running `example/example_tubeMPC.m`, you will get the following figure.
