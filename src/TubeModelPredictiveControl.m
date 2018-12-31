@@ -63,7 +63,7 @@ classdef TubeModelPredictiveControl
                 else 
                     u = obj.sys.K*x;
                 end
-                w = randn(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
+                w = rand(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
                 x = propagate(x, u, w);
                 x_real_seq = [x_real_seq, x];
                 u_real_seq = [u_real_seq, u];

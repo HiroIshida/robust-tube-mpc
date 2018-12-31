@@ -33,7 +33,7 @@ classdef ModelPredictiveControl < handle
             for i=1:Tsimu
                 [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x);
                 u = u_nominal_seq(:, 1);
-                w = randn(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
+                w = rand(2, 1).*(obj.w_max - obj.w_min)+obj.w_min;
                 x = propagate(x, u, w);
                 x_seq_real = [x_seq_real, x];
                 u_seq_real = [u_seq_real, u];
