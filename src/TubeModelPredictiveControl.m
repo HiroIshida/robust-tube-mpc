@@ -18,8 +18,7 @@ classdef TubeModelPredictiveControl
         function obj = TubeModelPredictiveControl(sys, Xc, Uc, W, N, w_min, w_max)
             optcon = OptimalControler(sys, Xc, Uc, N)
             %----------approximation of d-inv set--------%
-            alpha = 1.1;
-            Z = (W+sys.Ak*W+sys.Ak^2*W+sys.Ak^3*W)*alpha;
+            Z = sys.compute_distinv_set(W, 2, 1.05)
 
             %create robust X and U constraints, and construct solver using X and U
             Xc_robust = Xc - Z;
