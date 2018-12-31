@@ -18,4 +18,22 @@ Uc = Polyhedron(Uc_vertex);
 W_vertex = [0.15, 0.15; 0.15, -0.15; -0.15, -0.15; -0.15, 0.15];
 W = Polyhedron(W_vertex);
 
+% compute disturvance invariant set Z.
+Z = mysys.compute_distinv_set(W, 3, 1.05);
 
+% set boundary of system noise which corresponds to W.
+w_max = [0.15; 0.15];
+w_min = [-0.15; -0.15];
+
+% propagate particles many times following the discrete stochastic dynamics,
+% and we will see that particles never go outside of distervance invariant set Z.
+Nptcl = 10000;
+x = zeros(2, Nptcl); % particles 
+for i = 1:100
+    sys_noise = rand(2, Nptcl).*repmat(w_max - w_min, 1, Nptcl) + repmat(w_min, 1, Nptcl);
+    x = mysys.Ak*x + sys_noise;
+    clf;
+    Graphics.show_convex(Z, 'g', 'FaceAlpha', .3); % show Z
+    scatter(x(1, :), x(2, :)); % show particles
+    pause(0.01)
+end
