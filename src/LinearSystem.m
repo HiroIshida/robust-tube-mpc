@@ -24,15 +24,15 @@ classdef LinearSystem < handle
             obj.Ak = (obj.A+obj.B*obj.K);
         end
 
-        function Z = compute_distinv_set(obj, W, n_order, alpha)
+        function Z_approx = compute_distinv_set(obj, W, n_order, alpha)
             % W: Polyhedron of system noise
             % We could obtain dist_inv_set Z by computing an infinite geometric series,
             %  which is not practicall to get. So, we approximate this by trancating the polynomial.
-            Z = W;
+            Z_approx = W;
             for n = 1:n_order
-                Z = Z + obj.Ak^n*W;
+                Z_approx = Z_approx + obj.Ak^n*W;
             end
-            Z = Z*alpha;
+            Z_approx = Z_approx*alpha;
             % which takes the form of Z = alpha*(W + Ak*W + Ak^2*W + ... Ak^n_ordr*W).
             % where + denotes Minkowski addition.
         end
