@@ -11,9 +11,6 @@ This repository includes examples for the tube model predictive control (tube-MP
 ## Usage
 See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively. Note that every inequality constraint here is expressed as a convex set. For example, the constraints on state Xc is specified as a rectangular, which is constructed with 4 vertexes. When considering a 1-dim input Uc, Uc will be specified by min and max value (i.e. u∊[u_min, u_max]), so it will be constructed by 2 vertexes. For more detail, please see the example codes.
 
-## Disturbance invariant set 
-I think one may get stuck at computation of what paper [1] called "disturbance invariant set". The disturbance invariant set is an infinite [Minkowski addition](https://en.wikipedia.org/wiki/Minkowski_addition) `Z = W + Ak*W + Ak^2*W...`, where + denotes Minkowski addition. Obtaining this analytically is impossible, and then, what comes ones' mind first may be an approximation of that by truncation: `Z_approx = W+Ak*W...+Ak^n*W`. This approximation, however, leads to `Z_approx ⊂ Z`, which means `Z_approx` is not disturbance invariant. So, we must multiply it by some parameter `alpha` and get `Z_approx = alpha*(W+Ak*W...+Ak^n*W)` so that `Z ⊂ Z_approx` is guaranteed. (see `src/LinearSystem.m` for this implementation). The order of truncation and `alpha` are tuning parameters, and I chose values that are large enough. But, if you want to choose them in a more sophisticated way, paper [3] will be useful. Also, `example/example_dist_inv_set.m` may help you understand how disturbance the invariant set works.
-
 ## Short introduction to the tube MPC
 After running `example/example_tubeMPC.m`, you will get the following figure.
 <div align="center">
@@ -27,6 +24,9 @@ Now that you can see that the green nominal trajectory starting from the bottom 
 Protting it in a 3-dim fashion with a minus-time axis in the z-direction, you can easily get why we call that "tube". 
 
 Let me give some important details. The red region [Xc] that contains the pink region [Xc-Z] is the state constraint that we give first. However, considering the uncertainty, the tube-MPC designs the nominal trajectory to be located inside [Xc-Z], which enables to put "tube" around the nominal trajectory such that the tube is also contained in [Xc-Z]. Of course, the input sequence associated with the nominal trajectory is inside of [Uc-KZ]. If there is no disturbance, putting a terminal constraint [Xf] (set it to Maximum Positively Invariant Set, here) guarantees the stability and feasibility. However, considering the disturbance we have to put the terminal constraint [Xf-Z] instead. Once the terminal constraint [Xf-Z] is satisfied, in spite of the disturbance, the following trajectory will be stable around the origin by LQR feedback without violating any constraints.
+
+## Disturbance invariant set 
+I think one may get stuck at computation of what paper [1] called "disturbance invariant set". The disturbance invariant set is an infinite [Minkowski addition](https://en.wikipedia.org/wiki/Minkowski_addition) `Z = W + Ak*W + Ak^2*W...`, where + denotes Minkowski addition. Obtaining this analytically is impossible, and then, what comes ones' mind first may be an approximation of that by truncation: `Z_approx = W+Ak*W...+Ak^n*W`. This approximation, however, leads to `Z_approx ⊂ Z`, which means `Z_approx` is not disturbance invariant. So, we must multiply it by some parameter `alpha` and get `Z_approx = alpha*(W+Ak*W...+Ak^n*W)` so that `Z ⊂ Z_approx` is guaranteed. (see `src/LinearSystem.m` for this implementation). The order of truncation and `alpha` are tuning parameters, and I chose values that are large enough. But, if you want to choose them in a more sophisticated way, paper [3] will be useful. Also, `example/example_dist_inv_set.m` may help you understand how disturbance the invariant set works.
 
 # TODO
 1) better usage  
