@@ -9,7 +9,7 @@ This repository includes examples for the tube model predictive control (tube-MP
 
 
 ## Usage
-See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively. Note that every inequality constraint here is expressed as a convex set. For example, the constraints on state Xc is specified as a rectangular, which is constructed with 4 vertexes. When considering a 1-dim input Uc, Uc will be specified by min and max value (i.e. u∊[u_min, u_max]), so it will be constructed by 2 vertexes. For more detail, please see the example codes.
+See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively. Note that every inequality constraint here is expressed as a convex set. For example, the constraints on state `Xc` is specified as a rectangular, which is constructed with 4 vertexes. When considering a 1-dim input `Uc`, `Uc` will be specified by min and max value (i.e. `u∊[u_min, u_max]`), so it will be constructed by 2 vertexes. For more detail, please see the example codes.
 
 ## Short introduction to the tube MPC
 After running `example/example_tubeMPC.m`, you will get the following figure.
@@ -17,6 +17,7 @@ After running `example/example_tubeMPC.m`, you will get the following figure.
 <img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample2.jpg" alt="none" title="sample2" width="500">
 </div>
 Now that you can see that the green nominal trajectory starting from the bottom left of the figure and surrounding a "tube". The blue plot means the real trajectory affected by the disturbance. You can see that this real trajectory never stick out from the "tube", and is robustly guided into the region `Xf-Z`.
+
 </html>
 <div align="center">
 <img src="https://raw.githubusercontent.com/HiroIshida/robust-tube-mpc/master/fig/sample1.jpg" alt="none" title="sample1" width="500">
