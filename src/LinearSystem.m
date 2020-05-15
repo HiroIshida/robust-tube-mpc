@@ -36,6 +36,23 @@ classdef LinearSystem < handle
             % which takes the form of Z = alpha*(W + Ak*W + Ak^2*W + ... Ak^n_ordr*W).
             % where + denotes Minkowski addition.
         end
+
+        function Xmpi = compute_MPIset(obj, Xc, Uc) 
+            [F, G, nc] = convert_Poly2Mat(Xc, Uc);
+            Fpi = @(i) (F+G*obj.K)*obj.Ak^i;
+            Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i), 1), 1));
+            Xmpi = Xpi(0);
+            i= 0;
+            while(1) % 
+                i = i + 1;
+                Xmpi_tmp = and(Xmpi, Xpi(i));
+                if Xmpi_tmp == Xmpi
+                    break;
+                else
+                    Xmpi = Xmpi_tmp;
+                end
+            end
+        end
     end
 end
 
