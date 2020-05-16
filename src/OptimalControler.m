@@ -29,9 +29,9 @@ classdef OptimalControler < handle
             obj.n_opt = obj.sys.nx*(obj.N+1)+obj.sys.nu*obj.N;
             obj.constraint_manager = ConstraintManager()
             
-            obj.construct_costfunction();
-            obj.construct_eq_constraint();
-            obj.construct_ineq_constraint(Xc, Uc);
+            obj.H = obj.construct_costfunction();
+            [obj.C_eq1, obj.C_eq2] = obj.construct_eq_constraint();
+            [obj.C_neq1, obj.C_neq2] = obj.construct_ineq_constraint(Xc, Uc);
         end
 
         function remove_initial_eq_constraint(obj)
@@ -75,7 +75,7 @@ classdef OptimalControler < handle
     %% Methods Used in Constoructor
     methods (Access = private)
         
-        function construct_costfunction(obj)
+        function H = construct_costfunction(obj)
             % compute H
             Q_block = [];
             R_block = [];
@@ -83,10 +83,10 @@ classdef OptimalControler < handle
                 Q_block = blkdiag(Q_block, obj.sys.Q);
                 R_block = blkdiag(R_block, obj.sys.R);
             end
-            obj.H = blkdiag(Q_block, obj.sys.P, R_block);
+            H = blkdiag(Q_block, obj.sys.P, R_block);
         end
         
-        function construct_eq_constraint(obj)
+        function [C_eq1, C_eq2] = construct_eq_constraint(obj)
             % compute C_eq1 and C_eq2
             A_block = [];
             B_block = [];
@@ -96,13 +96,11 @@ classdef OptimalControler < handle
             end            
             C_dyn = [zeros(obj.sys.nx, obj.n_opt);
                 A_block, zeros(obj.sys.nx*obj.N, obj.sys.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
-            obj.C_eq1 = eye(obj.sys.nx*(obj.N+1), obj.n_opt) - C_dyn;
-            obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.sys.nx, 1)]; 
-            
-            obj.constraint_manager.add_eq_constraint('dynamics', obj.C_eq1, obj.C_eq2)
+            C_eq1 = eye(obj.sys.nx*(obj.N+1), obj.n_opt) - C_dyn;
+            C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.sys.nx, 1)]; 
         end
        
-        function construct_ineq_constraint(obj, Xc, Uc)
+        function [C_neq1, C_neq2] = construct_ineq_constraint(obj, Xc, Uc)
             % compute C_neq
             [F, G, obj.nc] = convert_Poly2Mat(Xc, Uc);
             
@@ -114,9 +112,9 @@ classdef OptimalControler < handle
             for itr = 1:obj.N+1
                 F_block = blkdiag(F_block, F);
             end
-            obj.C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.sys.nu*obj.N)]];
-            obj.nc_total = size(obj.C_neq1, 1);
-            obj.C_neq2 = ones(obj.nc_total, 1);
+            C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.sys.nu*obj.N)]];
+            obj.nc_total = size(C_neq1, 1);
+            C_neq2 = ones(obj.nc_total, 1);
         end
         
     end
