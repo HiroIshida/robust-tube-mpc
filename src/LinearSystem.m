@@ -24,6 +24,10 @@ classdef LinearSystem < handle
             obj.Ak = (obj.A+obj.B*obj.K);
         end
 
+        function x_new = propagate(obj, x, u) 
+            x_new = obj.A * x + obj.B * u
+        end
+
         function Z_approx = compute_distinv_set(obj, W, n_order, alpha)
             % W: Polyhedron of system noise
             % We could obtain dist_inv_set Z by computing an infinite geometric series,
