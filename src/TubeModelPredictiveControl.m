@@ -1,4 +1,4 @@
-classdef TubeModelPredictiveControl
+classdef TubeModelPredictiveControl < handle
     
     properties (SetAccess = public)
         sys % linear sys
@@ -12,6 +12,7 @@ classdef TubeModelPredictiveControl
         Z % disturbance invariant set
         Xmpi_robust; 
         N
+        solution % solution stored after solved
     end
     
     methods (Access = public)
@@ -42,14 +43,37 @@ classdef TubeModelPredictiveControl
             obj.N = N
             obj.w_max = w_max
             obj.w_min = w_min
+
+            % trajectory_solved
+            obj.solution = []
+        end
+
+        function solve(obj, x_init)
+            obj.optcon.remove_initial_eq_constraint()
+            Xinit = x_init + obj.Z;
+            obj.optcon.add_initial_constraint(Xinit);
+            [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init)
+            obj.solution = struct(...
+                'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq)
+        end
+
+        function [] = show_prediction(obj)
+            isSolved = ~isempty(obj.solution)
+            assert(isSolved, 'this method can be called only after MPC is solved') 
+
+            Graphics.show_convex(obj.Xc, 'm');
+            Graphics.show_convex(obj.Xc_robust, 'r');
+            Graphics.show_convex(obj.Xmpi_robust + obj.Z, [0.2, 0.2, 0.2]*1.5);
+            Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
+            x_nominal_seq = obj.solution.x_nominal_seq
+            for j=1:obj.N+1
+                Graphics.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
+            end
+            Graphics.show_trajectory(x_nominal_seq, 'gs-');
         end
         
         function [] = simulate(obj, Tsimu, x_init)
-            obj.optcon.remove_initial_eq_constraint()
-            Xinit = x_init+obj.Z;
-            obj.optcon.add_initial_constraint(Xinit);
 
-            [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init);
             
             x = x_init;
             x_real_seq = [x];
