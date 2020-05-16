@@ -63,20 +63,18 @@ classdef TubeModelPredictiveControl < handle
         end
 
         function [] = show_prediction(obj)
-            assert(~isempty(obj.solution), 'can be used only after solved')
+            assert(~isempty(obj.solution_cache), 'can be used only after solved')
             Graphics.show_convex(obj.Xc, 'm');
             Graphics.show_convex(obj.Xc_robust, 'r');
             Graphics.show_convex(obj.Xmpi_robust + obj.Z, [0.2, 0.2, 0.2]*1.5);
             Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
-            x_nominal_seq = obj.solution.x_nominal_seq
+            x_nominal_seq = obj.solution_cache.x_nominal_seq
             Graphics.show_trajectory(x_nominal_seq, 'gs-');
             for j=1:obj.N+1
                 Graphics.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
             end
 
-            leg = legend({'$X_c$', '$X_c\ominus Z$', ...
-                '$X_f \oplus Z$', '$X_f (X_{mpi})$', 'nominal traj.', 'tube'}, ...
-                'position', [0.5 0.15 0.1 0.2])
+            leg = legend({'$X_c$', '$X_c\ominus Z$', '$X_f \oplus Z$', '$X_f (X_{mpi})$', 'nominal traj.', 'tube'}, 'position', [0.5 0.15 0.1 0.2])
             set(leg, 'Interpreter', 'latex')
         end
         
