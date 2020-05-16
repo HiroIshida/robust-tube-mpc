@@ -66,10 +66,15 @@ classdef TubeModelPredictiveControl < handle
             Graphics.show_convex(obj.Xmpi_robust + obj.Z, [0.2, 0.2, 0.2]*1.5);
             Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
             x_nominal_seq = obj.solution.x_nominal_seq
+            Graphics.show_trajectory(x_nominal_seq, 'gs-');
             for j=1:obj.N+1
                 Graphics.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
             end
-            Graphics.show_trajectory(x_nominal_seq, 'gs-');
+
+            leg = legend({'$X_c$', '$X_c\ominus Z$', ...
+                '$X_f \oplus Z$', '$X_f (X_{mpi})$', 'nominal traj.', 'tube'}, ...
+                'position', [0.5 0.15 0.1 0.2])
+            set(leg, 'Interpreter', 'latex')
         end
         
         function [] = simulate(obj, Tsimu, x_init)
