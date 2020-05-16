@@ -98,6 +98,8 @@ classdef OptimalControler < handle
                 A_block, zeros(obj.sys.nx*obj.N, obj.sys.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
             obj.C_eq1 = eye(obj.sys.nx*(obj.N+1), obj.n_opt) - C_dyn;
             obj.C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.sys.nx, 1)]; 
+            
+            obj.constraint_manager.add_eq_constraint('dynamics', obj.C_eq1, obj.C_eq2)
         end
        
         function construct_ineq_constraint(obj, Xc, Uc)
