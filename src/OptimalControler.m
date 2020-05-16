@@ -12,7 +12,6 @@ classdef OptimalControler < handle
         H; % quadratic const V to be minimized here will be expressed as V = s'*H*s, where s:=[x(0), .., x(n-1), x(n), u(0)....u(n-1)].
         C_eq1; C_eq2; % equality constraints are defined as C_eq1*s =C_eq2; C_eq2 is a function object 
         C_neq1; C_neq2; % inequality constraints are defined as C_neq*s<=1 (1 is a vector)
-        Xmpi; % Maximum Positively Invariant set.
     end
     
     %% Public Methods
@@ -31,7 +30,6 @@ classdef OptimalControler < handle
             obj.construct_costfunction();
             obj.construct_eq_constraint();
             obj.construct_ineq_constraint(Xc, Uc);
-            obj.compute_MPIset();
         end
 
         function reconstruct_ineq_constraint(obj, Xc, Uc)
@@ -118,24 +116,6 @@ classdef OptimalControler < handle
             obj.C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.sys.nu*obj.N)]];
             obj.nc_total = size(obj.C_neq1, 1);
             obj.C_neq2 = ones(obj.nc_total, 1);
-        end
-        
-        function compute_MPIset(obj)
-            % MPIset is computed only once in the constructor;
-            [F, G, obj.nc] = convert_Poly2Mat(obj.Xc, obj.Uc);
-            Fpi = @(i) (F+G*obj.sys.K)*obj.sys.Ak^i;
-            Xpi = @(i) Polyhedron(Fpi(i), ones(size(Fpi(i), 1), 1));
-            obj.Xmpi = Xpi(0);
-            i= 0;
-            while(1) % 
-                i = i + 1;
-                Xmpi_tmp = and(obj.Xmpi, Xpi(i));
-                if Xmpi_tmp == obj.Xmpi
-                    break;
-                else
-                    obj.Xmpi = Xmpi_tmp;
-                end
-            end
         end
         
     end
