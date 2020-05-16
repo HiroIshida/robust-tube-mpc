@@ -12,7 +12,8 @@ classdef TubeModelPredictiveControl < handle
         Z % disturbance invariant set
         Xmpi_robust; 
         N
-        solution % solution stored after solved
+
+        solution_cache
     end
     
     methods (Access = public)
@@ -43,24 +44,26 @@ classdef TubeModelPredictiveControl < handle
             obj.N = N
             obj.w_max = w_max
             obj.w_min = w_min
-
-            % trajectory_solved
-            obj.solution = []
+            obj.solution_cache = []
         end
 
-        function solve(obj, x_init)
+        function u_next = solve(obj, x_init)
+            % Note that solution of optimal controler is cached in obj.solution_cache
             obj.optcon.remove_initial_eq_constraint()
             Xinit = x_init + obj.Z;
             obj.optcon.add_initial_constraint(Xinit);
             [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init)
-            obj.solution = struct(...
+
+            obj.solution_cache = struct(...
                 'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq)
+
+            u_nominal = u_nominal_seq(1)
+            u_feedback = obj.sys.K * (x_init - x_nominal_seq(1))
+            u_next = u_nominal + u_feedback
         end
 
         function [] = show_prediction(obj)
-            isSolved = ~isempty(obj.solution)
-            assert(isSolved, 'this method can be called only after MPC is solved') 
-
+            assert(~isempty(obj.solution), 'can be used only after solved')
             Graphics.show_convex(obj.Xc, 'm');
             Graphics.show_convex(obj.Xc_robust, 'r');
             Graphics.show_convex(obj.Xmpi_robust + obj.Z, [0.2, 0.2, 0.2]*1.5);
