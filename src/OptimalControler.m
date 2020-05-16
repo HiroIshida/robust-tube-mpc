@@ -4,11 +4,9 @@ classdef OptimalControler < handle
         sys; %system
         Xc; Uc; % constraints set for statespace and input space
         x_min; x_max; % lower and upper bound of Xc
-        nc; % number of contraint of Xc + Uc
         N; % prediction horizon
         Ak; % S.T.M of closed-roop system with LQR feedback
         n_opt; % dim. of optimization parameter
-        nc_total; % number of all ineq. constraints 
         H; % quadratic const V to be minimized here will be expressed as V = s'*H*s, where s:=[x(0), .., x(n-1), x(n), u(0)....u(n-1)].
         C_eq1; C_eq2; % equality constraints are defined as C_eq1*s =C_eq2; C_eq2 is a function object 
         C_neq1; C_neq2; % inequality constraints are defined as C_neq*s<=1 (1 is a vector)
@@ -102,7 +100,7 @@ classdef OptimalControler < handle
        
         function [C_neq1, C_neq2] = construct_ineq_constraint(obj, Xc, Uc)
             % compute C_neq
-            [F, G, obj.nc] = convert_Poly2Mat(Xc, Uc);
+            [F, G, nc] = convert_Poly2Mat(Xc, Uc);
             
             F_block = [];
             G_block = [];
@@ -112,9 +110,9 @@ classdef OptimalControler < handle
             for itr = 1:obj.N+1
                 F_block = blkdiag(F_block, F);
             end
-            C_neq1 = [F_block, [G_block; zeros(obj.nc, obj.sys.nu*obj.N)]];
-            obj.nc_total = size(C_neq1, 1);
-            C_neq2 = ones(obj.nc_total, 1);
+            C_neq1 = [F_block, [G_block; zeros(nc, obj.sys.nu*obj.N)]];
+            nc_total = size(C_neq1, 1);
+            C_neq2 = ones(nc_total, 1);
         end
         
     end
@@ -138,7 +136,6 @@ classdef OptimalControler < handle
             
             obj.C_neq1 = [obj.C_neq1;
                 block_add];
-            obj.nc = obj.nc + nc_add;
         end
         
     end
