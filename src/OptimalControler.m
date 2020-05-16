@@ -12,6 +12,7 @@ classdef OptimalControler < handle
         H; % quadratic const V to be minimized here will be expressed as V = s'*H*s, where s:=[x(0), .., x(n-1), x(n), u(0)....u(n-1)].
         C_eq1; C_eq2; % equality constraints are defined as C_eq1*s =C_eq2; C_eq2 is a function object 
         C_neq1; C_neq2; % inequality constraints are defined as C_neq*s<=1 (1 is a vector)
+        constraint_manager
     end
     
     %% Public Methods
@@ -26,6 +27,7 @@ classdef OptimalControler < handle
             obj.N = N;
             
             obj.n_opt = obj.sys.nx*(obj.N+1)+obj.sys.nu*obj.N;
+            obj.constraint_manager = ConstraintManager()
             
             obj.construct_costfunction();
             obj.construct_eq_constraint();
