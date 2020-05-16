@@ -10,8 +10,7 @@ classdef TubeModelPredictiveControl
         %Uc_robust; % Uc-K*Z (Pontryagin diff.)
         W
         Z % disturbance invariant set
-        Xmpi 
-        Xmpi_robust; % Xmpi-Z (Pontryagin diff.)
+        Xmpi_robust; 
         N
     end
     
@@ -27,8 +26,7 @@ classdef TubeModelPredictiveControl
             optcon.reconstruct_ineq_constraint(Xc_robust, Uc_robust)
 
             %robustize Xmpi set and set it as a terminal constraint
-            Xmpi = sys.compute_MPIset(Xc, Uc)
-            Xmpi_robust = Xmpi - Z;
+            Xmpi_robust = sys.compute_MPIset(Xc_robust, Uc_robust)
             optcon.add_terminal_constraint(Xmpi_robust);
 
             %fill properteis
@@ -40,7 +38,6 @@ classdef TubeModelPredictiveControl
             obj.Xc_robust = Xc_robust;
             obj.W = W
             obj.Z = Z
-            obj.Xmpi = Xmpi
             obj.Xmpi_robust = Xmpi_robust
             obj.N = N
             obj.w_max = w_max
@@ -73,7 +70,7 @@ classdef TubeModelPredictiveControl
                 clf; % real time plot
                 Graphics.show_convex(obj.Xc, 'm');
                 Graphics.show_convex(obj.Xc_robust, 'r');
-                Graphics.show_convex(obj.Xmpi, [0.2, 0.2, 0.2]*1.5);
+                Graphics.show_convex(obj.Xmpi_robust + obj.Z, [0.2, 0.2, 0.2]*1.5);
                 Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
                 for j=1:obj.N+1
                     Graphics.show_convex(x_nominal_seq(:, j)+obj.Z, 'g', 'FaceAlpha', 0.3);
@@ -87,8 +84,8 @@ classdef TubeModelPredictiveControl
             figure(2)
             Graphics.show_convex_timeslice(obj.Xc, -0.04, 'm');
             Graphics.show_convex_timeslice(obj.Xc_robust, -0.03, 'r');
-            Graphics.show_convex_timeslice(obj.Xmpi, -0.02, [0.2, 0.2, 0.2]*1.5);
-            Graphics.show_convex_timeslice(obj.Xmpi_robust, -0.01, [0.5, 0.5, 0.5]);
+            Graphics.show_convex_timeslice(obj.Xmpi_robust, -0.02, [0.2, 0.2, 0.2]*1.5);
+            Graphics.show_convex_timeslice(obj.Xmpi_robust + obj.Z, -0.01, [0.5, 0.5, 0.5]);
             Graphics.show_convex_timeslice(x_nominal_seq(:, 1)+obj.Z, obj.N, 'g', 'FaceAlpha', .3);
             Graphics.show_trajectory_timeslice(x_nominal_seq, 'gs-', 'LineWidth', 1.2);
             Graphics.show_trajectory_timeslice(x_real_seq(:, 1:obj.N+1), 'b*-', 'LineWidth', 1.2);
