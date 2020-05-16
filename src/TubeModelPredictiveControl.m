@@ -18,18 +18,19 @@ classdef TubeModelPredictiveControl < handle
     
     methods (Access = public)
         function obj = TubeModelPredictiveControl(sys, Xc, Uc, W, N, w_min, w_max)
-            optcon = OptimalControler(sys, Xc, Uc, N)
             %----------approximation of d-inv set--------%
             Z = sys.compute_distinv_set(W, 2, 1.05)
 
             %create robust X and U constraints, and construct solver using X and U
             Xc_robust = Xc - Z;
             Uc_robust = Uc - sys.K*Z;
-            optcon.reconstruct_ineq_constraint(Xc_robust, Uc_robust)
+            %optcon.reconstruct_ineq_constraint(Xc_robust, Uc_robust)
+            optcon = OptimalControler(sys, Xc_robust, Uc_robust, N)
 
             %robustize Xmpi set and set it as a terminal constraint
             Xmpi_robust = sys.compute_MPIset(Xc_robust, Uc_robust)
             optcon.add_terminal_constraint(Xmpi_robust);
+            optcon.remove_initial_eq_constraint()
 
             %fill properteis
             obj.sys = sys;
@@ -49,7 +50,6 @@ classdef TubeModelPredictiveControl < handle
 
         function u_next = solve(obj, x_init)
             % Note that solution of optimal controler is cached in obj.solution_cache
-            obj.optcon.remove_initial_eq_constraint()
             Xinit = x_init + obj.Z;
             obj.optcon.add_initial_constraint(Xinit);
             [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init)

@@ -32,12 +32,9 @@ classdef OptimalControler < handle
             obj.construct_ineq_constraint(Xc, Uc);
         end
 
-        function reconstruct_ineq_constraint(obj, Xc, Uc)
-            % naughty.. must be removed someday
-            obj.construct_ineq_constraint(Xc, Uc)
-        end
-
         function remove_initial_eq_constraint(obj)
+            % In tube MPC, the initial state of the nominal trjectory must not 
+            % be the actual initial state (see section 4 of Mayne et al, Robust model predictive control of constrained linear systems with bounded disturbances, 2005)
             % this function will be used in tube model predictive control
             obj.C_eq1 = obj.C_eq1(obj.sys.nx+1:size(obj.C_eq1, 1), 1:size(obj.C_eq1, 2));
             obj.C_eq2 = @(x) zeros(size(obj.C_eq1, 1), 1);
