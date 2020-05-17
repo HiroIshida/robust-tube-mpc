@@ -27,13 +27,8 @@ w_max = [0; 0.10];
 mpc = TubeModelPredictiveControl(mysys, Xc, Uc, W, N_step, w_min, w_max);
 
 % The robust MPC guidances the path inside the robust MPI-set so that the path will reach the robust MPI-set exactly at N_step. After that (meaning that t > N_step), the system will be stabilized around the origin by just using LQR.
-T_simu = 1
 x = [-7; -2];
 
-
-
-for i = 1:T_simu
-    u_next = mpc.solve(x)
-    x = mysys.propagate(x, u_next)
-    mpc.show_prediction()
-end
+u_next = mpc.solve(x)
+%x = mysys.propagate(x, u_next)
+mpc.show_prediction()

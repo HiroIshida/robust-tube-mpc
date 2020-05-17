@@ -32,8 +32,8 @@ classdef OptimalControler < handle
             [C_neq1, C_neq2] = obj.construct_ineq_constraint(Xc, Uc);
             obj.C_eq1 = C_eq1;
             obj.C_eq2 = C_eq2;
-            obj.C_eq1 = C_eq1;
-            obj.C_eq2 = C_eq2;
+            obj.C_neq1 = C_neq1;
+            obj.C_neq2 = C_neq2;
 
             %% Let's change initial and dynamics constraints!!
             obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2)
@@ -70,7 +70,7 @@ classdef OptimalControler < handle
             add_ineq_constraint(obj, Xadd, 1);
         end
         
-        function [x_seq, u_seq] = solve(obj, x_init)
+        function [x_seq, u_seq] = solve(obj)
             quadprog_solved = 0;
             C_neq1_relaxed = obj.C_neq1;
             options = optimoptions('quadprog', 'Display', 'none');
