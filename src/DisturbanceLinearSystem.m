@@ -25,10 +25,18 @@ classdef DisturbanceLinearSystem < LinearSystem
     methods (Access = public)
 
         function w = pick_random_disturbance(obj)
+            % pick disturbance form uniform distribution
             verts = obj.W.V;
             b_max = max(verts)';
             b_min = min(verts)';
-            w = rand(obj.nx, 1) .* (b_max - b_min) + b_min; 
+
+            % generate random until it will be inside of W
+            while true
+                w = rand(obj.nx, 1) .* (b_max - b_min) + b_min; 
+                if obj.W.contains(w)
+                    break
+                end
+            end
         end
 
         function Z_approx = compute_distinv_set(obj, n_order, alpha)
