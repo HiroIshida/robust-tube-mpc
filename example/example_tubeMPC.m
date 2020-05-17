@@ -27,7 +27,7 @@ Uc = Polyhedron(Uc_vertex);
 N_step = 10;
 w_min = [0; -0.10];
 w_max = [0; 0.10];
-mpc = TubeModelPredictiveControl(disturbance_system, Xc, Uc, W, N_step);
+mpc = TubeModelPredictiveControl(disturbance_system, Xc, Uc, N_step);
 
 % The robust MPC guidances the path inside the robust MPI-set so that the path will reach the robust MPI-set in N_step. 
 x = [-7; -2];
