@@ -3,17 +3,16 @@ classdef TubeModelPredictiveControl < handle
     properties (SetAccess = public)
         sys % linear system with disturbance
         optcon; % optimal contol solver object
-        Xc
-        Uc
+        Xc; % state constraint
+        Uc; % input constraint
         Xc_robust; % Xc-Z (Pontryagin diff.)
-        W
-        Xmpi_robust; 
-        N
+        Xmpi_robust; % MPI set. Note that this is made using Xc-Z and Uc-KZ (instead of Xc and Uc)
+        N; % horizon
         solution_cache
     end
     
     methods (Access = public)
-        function obj = TubeModelPredictiveControl(sys, Xc, Uc, W, N)
+        function obj = TubeModelPredictiveControl(sys, Xc, Uc, N)
             %----------approximation of d-inv set--------%
             %create robust X and U constraints, and construct solver using X and U
             Xc_robust = Xc - sys.Z;
@@ -28,11 +27,9 @@ classdef TubeModelPredictiveControl < handle
             %fill properteis
             obj.sys = sys;
             obj.optcon = optcon;
-            obj.W = W;
             obj.Xc = Xc;
             obj.Uc = Uc;
             obj.Xc_robust = Xc_robust;
-            obj.W = W;
             obj.Xmpi_robust = Xmpi_robust;
             obj.N = N;
             obj.solution_cache = [];

@@ -4,6 +4,10 @@ classdef OptimalControler < handle
     % (i) objective function V(s) = s'*H*S in quadratic form
     % (ii) equality constraints specified by C_eq1 and C_eq2 where C_eq1*s =C_eq2
     % (iii) inequality constraints specified by C_ineq1 and C_ineq2 where C_ineq1 * s <= C_ineq2
+    %
+    % For potential future extensions, all constraints will be managed by ConstraintManager class.
+    % Any time you add a new constraint, those constraint is pushed into the manager with a key (name of constraint). 
+    
     
     properties (SetAccess = private)
         sys; %system
@@ -11,8 +15,8 @@ classdef OptimalControler < handle
         x_min; x_max; % lower and upper bound of Xc
         N; % prediction horizon
         Ak; % S.T.M of closed-roop system with LQR feedback
-        n_opt; % dim. of optimization parameter
-        H; 
+        n_opt; % dim. of optimization parameter s :=[x(0), .., x(n), u(0)....u(n-1)]
+        H; % positive definite matrix for objective function V(s) = s'*H*s 
         constraint_manager;
     end
     
