@@ -13,13 +13,21 @@ Uc_vertex = [1; -1];
 Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
-% Unlike tube-MPC, this generic MPC doesn't guarantee the robustness. So if you
-% add some noise (determined by w_min and w_max), and running the simulation 
-% multiple times the state may hit the constraint Xc sometimes, which results in error.
-% Please do some experiments.
-w_min = [0; -0.06];
-w_max = [0; 0.05];
-mpc = ModelPredictiveControl(mysys, Xc, Uc, 3, w_min, w_max);
-x_init = [-7; -2];
-mpc.simulate(30, x_init);
+% Unlike tube-MPC, this generic MPC doesn't guarantee the robustness. 
+% In the following simulation you will notice that the generated path almost touch the boundary.
+% Thus, you can imagine that if some additive disturbance is considered, then the state can 
+% easily be off the boundary, and the succeeding optimization will no longer be feasible.
+% Please add some noise and do experiments.
+N_horizon = 5
+mpc = ModelPredictiveControl(mysys, Xc, Uc, N_horizon);
+
+x = [-7; -2];
+savedir_name = 'results'
+for i = 1:15
+    u_next = mpc.solve(x);
+    x = mysys.propagate(x, u_next); % + add some noise here
+    mpc.show_prediction()
+    pause(0.1)
+    clf
+end
 
