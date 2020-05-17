@@ -37,7 +37,7 @@ classdef OptimalControler < handle
 
             %% Let's change initial and dynamics constraints!!
             obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2)
-            obj.constraint_manager.add_neq_constraint('feasible', C_neq1, C_neq2)
+            obj.constraint_manager.add_ineq_constraint('feasible', C_neq1, C_neq2)
         end
 
         function remove_initial_eq_constraint(obj)
@@ -65,12 +65,14 @@ classdef OptimalControler < handle
             [C_neq1_add, C_neq2_add] = add_ineq_constraint(obj, Xadd, obj.N+1);
             obj.C_neq1 = [obj.C_neq1; C_neq1_add]
             obj.C_neq2 = [obj.C_neq2; C_neq2_add]
+            obj.constraint_manager.add_ineq_constraint('terinal', C_neq1_add, C_neq2_add)
         end
 
         function add_initial_constraint(obj, Xadd)
             [C_neq1_add, C_neq2_add] = add_ineq_constraint(obj, Xadd, 1);
             obj.C_neq1 = [obj.C_neq1; C_neq1_add]
             obj.C_neq2 = [obj.C_neq2; C_neq2_add]
+            obj.constraint_manager.add_ineq_constraint('initial', C_neq1_add, C_neq2_add)
         end
         
         function [x_seq, u_seq] = solve(obj)
