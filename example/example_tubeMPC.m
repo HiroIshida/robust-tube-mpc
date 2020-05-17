@@ -6,7 +6,6 @@ A = [1 1; 0 1];
 B = [0.5; 1]; 
 Q = diag([1, 1]);
 R = 0.1;
-mysys = LinearSystem(A, B, Q, R);
 
 % constraints on state Xc and input Uc
 Xc_vertex = [2, -2; 2 2; -10 2; -10 -2];
@@ -18,6 +17,7 @@ Uc = Polyhedron(Uc_vertex);
 W_vertex = [0.15, 0.15; 0.15, -0.15; -0.15, -0.15; -0.15, 0.15];
 W = Polyhedron(W_vertex);
 
+mysys = DisturbanceLinearSystem(A, B, Q, R, W)
 % create a tube_mpc simulater
 % if N_step is too small, the path will never reach inside the robust MPI-set (X_MPI - Z) in time step N_step, then the problem becomes infeasible. 
 % Please note that rectangle defined by w_min and w_max must be included in W, otherwise, of course, the robustness is not guranteed.
@@ -29,6 +29,8 @@ mpc = TubeModelPredictiveControl(mysys, Xc, Uc, W, N_step, w_min, w_max);
 % The robust MPC guidances the path inside the robust MPI-set so that the path will reach the robust MPI-set exactly at N_step. After that (meaning that t > N_step), the system will be stabilized around the origin by just using LQR.
 x = [-7; -2];
 
-u_next = mpc.solve(x)
-%x = mysys.propagate(x, u_next)
+for i = 1:3
+    u_next = mpc.solve(x)
+    x = mysys.propagate(x, u_next)
+end
 mpc.show_prediction()
