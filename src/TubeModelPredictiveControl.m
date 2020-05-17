@@ -44,7 +44,7 @@ classdef TubeModelPredictiveControl < handle
             obj.solution_cache = struct(...
                 'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq);
 
-            u_nominal = u_nominal_seq(;, 1);
+            u_nominal = u_nominal_seq(:, 1);
             u_feedback = obj.sys.K * (x_init - x_nominal_seq(:, 1));
             u_next = u_nominal + u_feedback;
         end
@@ -53,7 +53,7 @@ classdef TubeModelPredictiveControl < handle
             assert(~isempty(obj.solution_cache), 'can be used only after solved');
             Graphics.show_convex(obj.Xc, 'm');
             Graphics.show_convex(obj.Xc_robust, 'r');
-            Graphics.show_convex(obj.Xmpi_robust + obj.sys.Z, [0.2, 0.2, 0.2]*1.5);
+            Graphics.show_convex(obj.Xmpi_robust + obj.sys.Z, [0.3, 0.3, 0.3]); % rgb = [0.3, 0.3, 0.3]
             Graphics.show_convex(obj.Xmpi_robust, [0.5, 0.5, 0.5]); % gray
             x_init = obj.solution_cache.x_init;
             scatter(x_init(1), x_init(2), 50, 'bs', 'filled');
