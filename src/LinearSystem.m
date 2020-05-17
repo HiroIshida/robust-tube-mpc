@@ -28,19 +28,6 @@ classdef LinearSystem < handle
             x_new = obj.A * x + obj.B * u;
         end
 
-        function Z_approx = compute_distinv_set(obj, W, n_order, alpha)
-            % W: Polyhedron of system noise
-            % We could obtain dist_inv_set Z by computing an infinite geometric series,
-            %  which is not practicall to get. So, we approximate this by trancating the polynomial.
-            Z_approx = W;
-            for n = 1:n_order
-                Z_approx = Z_approx + obj.Ak^n*W;
-            end
-            Z_approx = Z_approx*alpha;
-            % which takes the form of Z = alpha*(W + Ak*W + Ak^2*W + ... Ak^n_ordr*W).
-            % where + denotes Minkowski addition.
-        end
-
         function Xmpi = compute_MPIset(obj, Xc, Uc) 
             [F, G, nc] = convert_Poly2Mat(Xc, Uc);
             Fpi = @(i) (F+G*obj.K)*obj.Ak^i;
