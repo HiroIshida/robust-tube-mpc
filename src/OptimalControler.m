@@ -37,8 +37,7 @@ classdef OptimalControler < handle
 
             %% Let's change initial and dynamics constraints!!
             obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2)
-            obj.constraint_manager.add_neq_constraint('initial', C_neq1, C_neq2)
-
+            obj.constraint_manager.add_neq_constraint('feasible', C_neq1, C_neq2)
         end
 
         function remove_initial_eq_constraint(obj)
@@ -49,10 +48,6 @@ classdef OptimalControler < handle
             obj.C_eq2 = @(x) zeros(size(obj.C_eq1, 1), 1);
         end
         
-        function add_terminal_constraint(obj, Xadd)
-            add_ineq_constraint(obj, Xadd, obj.N+1);
-        end
-
         function add_initial_eq_constraint(obj, x_init)
             % E * x0 = x_init
             idx_x0_start = 1
@@ -66,8 +61,16 @@ classdef OptimalControler < handle
             obj.C_eq2 = [obj.C_eq2; C_initial_eq2]
         end
 
+        function add_terminal_constraint(obj, Xadd)
+            [C_neq1_add, C_neq2_add] = add_ineq_constraint(obj, Xadd, obj.N+1);
+            obj.C_neq1 = [obj.C_neq1; C_neq1_add]
+            obj.C_neq2 = [obj.C_neq2; C_neq2_add]
+        end
+
         function add_initial_constraint(obj, Xadd)
-            add_ineq_constraint(obj, Xadd, 1);
+            [C_neq1_add, C_neq2_add] = add_ineq_constraint(obj, Xadd, 1);
+            obj.C_neq1 = [obj.C_neq1; C_neq1_add]
+            obj.C_neq2 = [obj.C_neq2; C_neq2_add]
         end
         
         function [x_seq, u_seq] = solve(obj)
@@ -155,23 +158,20 @@ classdef OptimalControler < handle
     
     methods (Access = private)
         
-        function add_ineq_constraint(obj, Xadd, k_add)
+        function [C_neq1_add, C_neq2_add] = add_ineq_constraint(obj, Xadd, k_add)
             % add a new constraint at time step k 
             if Xadd.contains(zeros(2, 1)) % If Xadd contains the origin, the contraint can be expressed as C1*x<=1
                 [F_add, ~, nc_add] = convert_Poly2Mat(Xadd, Polyhedron());
-                obj.C_neq2 = [obj.C_neq2; ones(nc_add, 1)];
+                C_neq2_add = ones(nc_add, 1)
                 
             else % in other cases, expressed in a general affine form C1*x<=C2
                 F_add = Xadd.A;
                 nc_add = size(F_add, 1);
-                obj.C_neq2 = [obj.C_neq2; Xadd.b];
+                C_neq2_add = Xadd.b
             end
             
-            block_add = zeros(nc_add, obj.n_opt);
-            block_add(:, (k_add-1)*obj.sys.nx+1:k_add*obj.sys.nx) = F_add;
-            
-            obj.C_neq1 = [obj.C_neq1;
-                block_add];
+            C_neq1_add = zeros(nc_add, obj.n_opt);
+            C_neq1_add(:, (k_add-1)*obj.sys.nx+1:k_add*obj.sys.nx) = F_add;
         end
         
     end
