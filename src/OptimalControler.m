@@ -77,14 +77,17 @@ classdef OptimalControler < handle
         
         function [x_seq, u_seq] = solve(obj)
             quadprog_solved = 0;
-            C_neq1_relaxed = obj.C_neq1;
+            [C_eq1, C_eq2] = obj.constraint_manager.combine_all_eq_constraints()
+            [C_ineq1, C_ineq2] = obj.constraint_manager.combine_all_ineq_constraints()
+
+            C_ineq1_relaxed = C_ineq1;
             options = optimoptions('quadprog', 'Display', 'none');
             itr = 0;
             while(quadprog_solved ~=1 )
-                [var_optim, ~, exitflag] = quadprog(obj.H, [], C_neq1_relaxed, obj.C_neq2, obj.C_eq1, obj.C_eq2, [], [], [], options);
+                [var_optim, ~, exitflag] = quadprog(obj.H, [], C_ineq1_relaxed, C_ineq2, C_eq1, C_eq2, [], [], [], options);
                 
                 quadprog_solved = (exitflag==1);
-                C_neq1_relaxed = C_neq1_relaxed*0.999;
+                C_ineq1_relaxed = C_ineq1_relaxed*0.999;
                 itr = itr + 1;
                 if (itr>10)
                     error('Not feasible');
