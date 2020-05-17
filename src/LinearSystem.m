@@ -12,12 +12,12 @@ classdef LinearSystem < handle
     methods (Access = public)
 
         function obj = LinearSystem(A, B, Q, R)
-            obj.A = A
-            obj.B = B
-            obj.Q = Q
-            obj.R = R
-            obj.nx = size(A, 1)
-            obj.nu = size(B, 2)
+            obj.A = A;
+            obj.B = B;
+            obj.Q = Q;
+            obj.R = R;
+            obj.nx = size(A, 1);
+            obj.nu = size(B, 2);
 
             [K_tmp, obj.P] = dlqr(obj.A, obj.B, obj.Q, obj.R);
             obj.K = -K_tmp;
@@ -25,7 +25,7 @@ classdef LinearSystem < handle
         end
 
         function x_new = propagate(obj, x, u) 
-            x_new = obj.A * x + obj.B * u
+            x_new = obj.A * x + obj.B * u;
         end
 
         function Z_approx = compute_distinv_set(obj, W, n_order, alpha)

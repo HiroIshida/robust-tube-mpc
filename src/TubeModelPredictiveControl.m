@@ -30,7 +30,6 @@ classdef TubeModelPredictiveControl < handle
             %robustize Xmpi set and set it as a terminal constraint
             Xmpi_robust = sys.compute_MPIset(Xc_robust, Uc_robust)
             optcon.add_terminal_constraint(Xmpi_robust);
-            optcon.remove_initial_eq_constraint()
 
             %fill properteis
             obj.sys = sys;
@@ -52,7 +51,7 @@ classdef TubeModelPredictiveControl < handle
             % Note that solution of optimal controler is cached in obj.solution_cache
             Xinit = x_init + obj.Z;
             obj.optcon.add_initial_constraint(Xinit);
-            [x_nominal_seq, u_nominal_seq] = obj.optcon.solve(x_init)
+            [x_nominal_seq, u_nominal_seq] = obj.optcon.solve()
 
             obj.solution_cache = struct(...
                 'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq)
