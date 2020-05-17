@@ -20,7 +20,7 @@ classdef OptimalControler < handle
     methods (Access = public)
         
         function obj = OptimalControler(sys, Xc, Uc, N)
-            obj.sys = sys
+            obj.sys = sys;
             obj.Xc = Xc;
             obj.x_min = min(Xc.V, [], 1)';
             obj.x_max = max(Xc.V, [], 2)';
@@ -35,35 +35,35 @@ classdef OptimalControler < handle
             [C_ineq1, C_ineq2] = obj.construct_ineq_constraint(Xc, Uc);
 
             %% Let's change initial and dynamics constraints!!
-            obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2)
-            obj.constraint_manager.add_ineq_constraint('feasible', C_ineq1, C_ineq2)
+            obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2);
+            obj.constraint_manager.add_ineq_constraint('feasible', C_ineq1, C_ineq2);
         end
 
         function add_initial_eq_constraint(obj, x_init)
             % E * x0 = x_init
-            idx_x0_start = 1
-            idx_x0_end = obj.sys.nx 
+            idx_x0_start = 1;
+            idx_x0_end = obj.sys.nx;
 
-            C_eq1_init = zeros(obj.sys.nx, obj.n_opt)
-            C_eq1_init(:, idx_x0_start:idx_x0_end) = eye(obj.sys.nx)
-            C_eq2_init = x_init
-            obj.constraint_manager.add_eq_constraint('initial', C_eq1_init, C_eq2_init)
+            C_eq1_init = zeros(obj.sys.nx, obj.n_opt);
+            C_eq1_init(:, idx_x0_start:idx_x0_end) = eye(obj.sys.nx);
+            C_eq2_init = x_init;
+            obj.constraint_manager.add_eq_constraint('initial', C_eq1_init, C_eq2_init);
         end
 
         function add_terminal_constraint(obj, Xadd)
             [C_ineq1_add, C_ineq2_add] = add_ineq_constraint(obj, Xadd, obj.N+1);
-            obj.constraint_manager.add_ineq_constraint('terinal', C_ineq1_add, C_ineq2_add)
+            obj.constraint_manager.add_ineq_constraint('terinal', C_ineq1_add, C_ineq2_add);
         end
 
         function add_initial_constraint(obj, Xadd)
             [C_ineq1_add, C_ineq2_add] = add_ineq_constraint(obj, Xadd, 1);
-            obj.constraint_manager.add_ineq_constraint('initial', C_ineq1_add, C_ineq2_add)
+            obj.constraint_manager.add_ineq_constraint('initial', C_ineq1_add, C_ineq2_add);
         end
         
         function [x_seq, u_seq] = solve(obj)
             quadprog_solved = 0;
-            [C_eq1, C_eq2] = obj.constraint_manager.combine_all_eq_constraints()
-            [C_ineq1, C_ineq2] = obj.constraint_manager.combine_all_ineq_constraints()
+            [C_eq1, C_eq2] = obj.constraint_manager.combine_all_eq_constraints();
+            [C_ineq1, C_ineq2] = obj.constraint_manager.combine_all_ineq_constraints();
 
             C_ineq1_relaxed = C_ineq1;
             options = optimoptions('quadprog', 'Display', 'none');
@@ -103,28 +103,28 @@ classdef OptimalControler < handle
             % compute C_eq1 and C_eq2
             function C_ss_eq1 = single_step_dynamics_eq1(k)
                 % A x(k) - E x(k+1) + Bu(k) = 0
-                idx_xk_start = obj.sys.nx * k + 1
-                idx_xk_end = obj.sys.nx * (k + 1)
+                idx_xk_start = obj.sys.nx * k + 1;
+                idx_xk_end = obj.sys.nx * (k + 1);
 
-                idx_xkp1_start = obj.sys.nx * (k + 1) + 1
-                idx_xkp1_end = obj.sys.nx * (k + 2)
+                idx_xkp1_start = obj.sys.nx * (k + 1) + 1;
+                idx_xkp1_end = obj.sys.nx * (k + 2);
 
-                idx_uk_start  = obj.sys.nx * (obj.N+1) + obj.sys.nu * k + 1
-                idx_uk_end  = obj.sys.nx * (obj.N+1) + obj.sys.nu * (k + 1)
+                idx_uk_start  = obj.sys.nx * (obj.N+1) + obj.sys.nu * k + 1;
+                idx_uk_end  = obj.sys.nx * (obj.N+1) + obj.sys.nu * (k + 1);
 
-                C_ss_eq1 = zeros(obj.sys.nx, obj.n_opt)
+                C_ss_eq1 = zeros(obj.sys.nx, obj.n_opt);
 
-                C_ss_eq1(:, idx_xk_start:idx_xk_end) = obj.sys.A
-                C_ss_eq1(:, idx_xkp1_start:idx_xkp1_end) = - eye(obj.sys.nx)
-                C_ss_eq1(:, idx_uk_start:idx_uk_end) = obj.sys.B
+                C_ss_eq1(:, idx_xk_start:idx_xk_end) = obj.sys.A;
+                C_ss_eq1(:, idx_xkp1_start:idx_xkp1_end) = - eye(obj.sys.nx);
+                C_ss_eq1(:, idx_uk_start:idx_uk_end) = obj.sys.B;
             end
 
-            C_eq1 = []
+            C_eq1 = [];
             for k = 0:obj.N-1
-                C_ss_eq1 = single_step_dynamics_eq1(k)
-                C_eq1 = [C_eq1; C_ss_eq1]
+                C_ss_eq1 = single_step_dynamics_eq1(k);
+                C_eq1 = [C_eq1; C_ss_eq1];
             end
-            C_eq2 = zeros(size(C_eq1, 1), 1) 
+            C_eq2 = zeros(size(C_eq1, 1), 1);
         end
        
         function [C_ineq1, C_ineq2] = construct_ineq_constraint(obj, Xc, Uc)
@@ -152,12 +152,12 @@ classdef OptimalControler < handle
             % add a new constraint at time step k 
             if Xadd.contains(zeros(2, 1)) % If Xadd contains the origin, the contraint can be expressed as C1*x<=1
                 [F_add, ~, nc_add] = convert_Poly2Mat(Xadd, Polyhedron());
-                C_ineq2_add = ones(nc_add, 1)
+                C_ineq2_add = ones(nc_add, 1);
                 
             else % in other cases, expressed in a general affine form C1*x<=C2
                 F_add = Xadd.A;
                 nc_add = size(F_add, 1);
-                C_ineq2_add = Xadd.b
+                C_ineq2_add = Xadd.b;
             end
             
             C_ineq1_add = zeros(nc_add, obj.n_opt);

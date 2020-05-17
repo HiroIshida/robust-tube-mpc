@@ -21,7 +21,7 @@ W_vertex = [0.15, 0.15; 0.15, -0.15; -0.15, -0.15; -0.15, 0.15];
 W = Polyhedron(W_vertex);
 
 % construct disturbance Linear system
-disturbance_system = DisturbanceLinearSystem(A, B, Q, R, W)
+disturbance_system = DisturbanceLinearSystem(A, B, Q, R, W);
 
 % create a tube_mpc simulater
 % if N_step is too small, the path will never reach inside the robust MPI-set X_mpi_robust in time step N_step, then the problem becomes infeasible. 
@@ -37,10 +37,11 @@ savedir_name = 'results'
 mkdir(savedir_name)
 
 for i = 1:15
-    u_next = mpc.solve(x)
-    x = disturbance_system.propagate(x, u_next)
-    mpc.show_prediction()
-    saveas(gcf, strcat(savedir_name, '/tmpc_seq', number2string(i), '.png'))
-    clf
+    disp(i)
+    u_next = mpc.solve(x);
+    x = disturbance_system.propagate(x, u_next);
+    mpc.show_prediction();
+    saveas(gcf, strcat(savedir_name, '/tmpc_seq', number2string(i), '.png'));
+    clf;
 end
 

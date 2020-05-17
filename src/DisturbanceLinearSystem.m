@@ -11,7 +11,7 @@ classdef DisturbanceLinearSystem < LinearSystem
             obj = obj@LinearSystem(A, B, Q, R);
 
             obj.W = W;
-            obj.Z = obj.compute_distinv_set(3, 1.05)
+            obj.Z = obj.compute_distinv_set(3, 1.05);
         end
 
         function x_new = propagate(obj, x, u)

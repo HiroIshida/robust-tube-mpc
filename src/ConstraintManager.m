@@ -17,7 +17,7 @@ classdef ConstraintManager < handle
         end
 
         function add_ineq_constraint(obj, key, C_ineq1, C_ineq2)
-            obj.C_inequality(key) =  {C_ineq1, C_ineq2}
+            obj.C_inequality(key) =  {C_ineq1, C_ineq2};
         end
 
         function remove_eq_constraint(obj, key)
