@@ -63,7 +63,7 @@ classdef OptimalControler < handle
             options = optimoptions('quadprog', 'Display', 'none');
             itr = 0;
             while(quadprog_solved ~=1 )
-                [var_optim, ~, exitflag] = quadprog(obj.H, [], C_neq1_relaxed, obj.C_neq2, obj.C_eq1, obj.C_eq2(x_init), [], [], [], options);
+                [var_optim, ~, exitflag] = quadprog(obj.H, [], C_neq1_relaxed, obj.C_neq2, obj.C_eq1, obj.C_eq2, [], [], [], options);
                 
                 quadprog_solved = (exitflag==1);
                 C_neq1_relaxed = C_neq1_relaxed*0.999;
@@ -93,18 +93,32 @@ classdef OptimalControler < handle
             H = blkdiag(Q_block, obj.sys.P, R_block);
         end
 
-        function [C_dyn_eq1, C_dyn_eq2] = construct_dynamics_constraint(obj)
+        function [C_eq1, C_eq2] = construct_dynamics_constraint(obj)
             % compute C_eq1 and C_eq2
-            A_block = [];
-            B_block = [];
-            for itr=1:obj.N
-                A_block = blkdiag(A_block, obj.sys.A);
-                B_block = blkdiag(B_block, obj.sys.B);
-            end            
-            C_dyn = [zeros(obj.sys.nx, obj.n_opt);
-                A_block, zeros(obj.sys.nx*obj.N, obj.sys.nx), B_block]; %Note: [x(0)...x(N)]^T = C_dyn*[x(0)...x(N), u(0)...u(N-1)] + C_eq2
-            C_eq1 = eye(obj.sys.nx*(obj.N+1), obj.n_opt) - C_dyn;
-            C_eq2 = @(x_init) [x_init; zeros(size(obj.C_eq1, 1)-obj.sys.nx, 1)]; 
+            function C_ss_eq1 = single_step_dynamics_eq1(k)
+                % A x(k) - E x(k+1) + Bu(k) = 0
+                idx_xk_start = obj.sys.nx * k + 1
+                idx_xk_end = obj.sys.nx * (k + 1)
+
+                idx_xkp1_start = obj.sys.nx * (k + 1) + 1
+                idx_xkp1_end = obj.sys.nx * (k + 2)
+
+                idx_uk_start  = obj.sys.nx * (obj.N+1) + obj.sys.nu * k + 1
+                idx_uk_end  = obj.sys.nx * (obj.N+1) + obj.sys.nu * (k + 1)
+
+                C_ss_eq1 = zeros(obj.sys.nx, obj.n_opt)
+
+                C_ss_eq1(:, idx_xk_start:idx_xk_end) = obj.sys.A
+                C_ss_eq1(:, idx_xkp1_start:idx_xkp1_end) = - eye(obj.sys.nx)
+                C_ss_eq1(:, idx_uk_start:idx_uk_end) = obj.sys.B
+            end
+
+            C_eq1 = []
+            for k = 0:obj.N-1
+                C_ss_eq1 = single_step_dynamics_eq1(k)
+                C_eq1 = [C_eq1; C_ss_eq1]
+            end
+            C_eq2 = zeros(size(C_eq1, 1), 1) 
         end
        
         function [C_neq1, C_neq2] = construct_ineq_constraint(obj, Xc, Uc)
