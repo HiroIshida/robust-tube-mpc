@@ -22,4 +22,5 @@ Uc = Polyhedron(Uc_vertex);
 N_step = 20; 
 optcon = OptimalControler(mysys, Xc, Uc, 20);
 x_init = [-7; -2];
-[x_seq, u_seq] = optcon.solve(x_init);
+optcon.add_initial_eq_constraint(x_init)
+[x_seq, u_seq] = optcon.solve();

@@ -53,6 +53,19 @@ classdef OptimalControler < handle
             add_ineq_constraint(obj, Xadd, obj.N+1);
         end
 
+        function add_initial_eq_constraint(obj, x_init)
+            % E * x0 = x_init
+            idx_x0_start = 1
+            idx_x0_end = obj.sys.nx 
+
+            C_initial_eq1 = zeros(obj.sys.nx, obj.n_opt)
+            C_initial_eq1(:, idx_x0_start:idx_x0_end) = eye(obj.sys.nx)
+            C_initial_eq2 = x_init
+
+            obj.C_eq1 = [obj.C_eq1; C_initial_eq1]
+            obj.C_eq2 = [obj.C_eq2; C_initial_eq2]
+        end
+
         function add_initial_constraint(obj, Xadd)
             add_ineq_constraint(obj, Xadd, 1);
         end
