@@ -10,7 +10,7 @@ classdef OptimalControler < handle
         H; % quadratic const V to be minimized here will be expressed as V = s'*H*s, where s:=[x(0), .., x(n-1), x(n), u(0)....u(n-1)].
         C_eq1; C_eq2; % equality constraints are defined as C_eq1*s =C_eq2; C_eq2 is a function object 
         C_neq1; C_neq2; % inequality constraints are defined as C_neq*s<=1 (1 is a vector)
-        constraint_manager
+        constraint_manager;
     end
     
     %% Public Methods
@@ -25,11 +25,20 @@ classdef OptimalControler < handle
             obj.N = N;
             
             obj.n_opt = obj.sys.nx*(obj.N+1)+obj.sys.nu*obj.N;
-            obj.constraint_manager = ConstraintManager()
+            obj.constraint_manager = ConstraintManager();
             
             obj.H = obj.construct_costfunction();
-            [obj.C_eq1, obj.C_eq2] = obj.construct_eq_constraint();
-            [obj.C_neq1, obj.C_neq2] = obj.construct_ineq_constraint(Xc, Uc);
+            [C_eq1, C_eq2] = obj.construct_dynamics_constraint();
+            [C_neq1, C_neq2] = obj.construct_ineq_constraint(Xc, Uc);
+            obj.C_eq1 = C_eq1;
+            obj.C_eq2 = C_eq2;
+            obj.C_eq1 = C_eq1;
+            obj.C_eq2 = C_eq2;
+
+            %% Let's change initial and dynamics constraints!!
+            obj.constraint_manager.add_eq_constraint('dynamics', C_eq1, C_eq2)
+            obj.constraint_manager.add_neq_constraint('initial', C_neq1, C_neq2)
+
         end
 
         function remove_initial_eq_constraint(obj)
@@ -83,8 +92,8 @@ classdef OptimalControler < handle
             end
             H = blkdiag(Q_block, obj.sys.P, R_block);
         end
-        
-        function [C_eq1, C_eq2] = construct_eq_constraint(obj)
+
+        function [C_dyn_eq1, C_dyn_eq2] = construct_dynamics_constraint(obj)
             % compute C_eq1 and C_eq2
             A_block = [];
             B_block = [];
