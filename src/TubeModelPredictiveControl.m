@@ -44,7 +44,7 @@ classdef TubeModelPredictiveControl < handle
             obj.solution_cache = struct(...
                 'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq);
 
-            u_nominal = u_nominal_seq(1);
+            u_nominal = u_nominal_seq(;, 1);
             u_feedback = obj.sys.K * (x_init - x_nominal_seq(:, 1));
             u_next = u_nominal + u_feedback;
         end

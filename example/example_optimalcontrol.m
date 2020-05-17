@@ -15,12 +15,12 @@ Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
 % create a optimal controler
-% if N_step is too small, the path will never reach inside 
-% the maximum positively invariant set (X_MPI) in time step N_step, 
+% if N_horizon is too small, the path will never reach inside 
+% the maximum positively invariant set (X_MPI) in time step N_horizon, 
 % then the problem becomes infeasible.
 % OptimalControler.solve method returns optimal path (x_seq) and input (u_seq)
-N_step = 20; 
+N_horizon = 20; 
 optcon = OptimalControler(mysys, Xc, Uc, 20);
 x_init = [-7; -2];
-optcon.add_initial_eq_constraint(x_init)
+optcon.add_initial_eq_constraint(x_init);
 [x_seq, u_seq] = optcon.solve();

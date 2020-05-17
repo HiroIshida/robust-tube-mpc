@@ -18,16 +18,16 @@ Uc = Polyhedron(Uc_vertex);
 % Thus, you can imagine that if some additive disturbance is considered, then the state can 
 % easily be off the boundary, and the succeeding optimization will no longer be feasible.
 % Please add some noise and do experiments.
-N_horizon = 5
+N_horizon = 5;
 mpc = ModelPredictiveControl(mysys, Xc, Uc, N_horizon);
 
 x = [-7; -2];
-savedir_name = 'results'
+savedir_name = 'results';
 for i = 1:15
     u_next = mpc.solve(x);
     x = mysys.propagate(x, u_next); % + add some noise here
-    mpc.show_prediction()
-    pause(0.1)
-    clf
+    mpc.show_prediction();
+    pause(0.1);
+    clf;
 end
 

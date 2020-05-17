@@ -2,7 +2,7 @@ addpath('../src/')
 addpath('../src/utils/')
 
 % fix random seed
-rng(0)
+rng(0);
 
 % make your own discrete linear system with disturbance
 A = [1 1; 0 1];
@@ -23,16 +23,16 @@ Xc = Polyhedron(Xc_vertex);
 Uc = Polyhedron(Uc_vertex);
 
 % create a tube_mpc simulater
-% if N_step is too small, the path will never reach inside the robust MPI-set X_mpi_robust in time step N_step, then the problem becomes infeasible. 
-N_step = 10;
+% if N_horizon is too small, the path will never reach inside the robust MPI-set X_mpi_robust in time step N_horizon, then the problem becomes infeasible. 
+N_horizon = 10;
 w_min = [0; -0.10];
 w_max = [0; 0.10];
-mpc = TubeModelPredictiveControl(disturbance_system, Xc, Uc, N_step);
+mpc = TubeModelPredictiveControl(disturbance_system, Xc, Uc, N_horizon);
 
-% The robust MPC guidances the path inside the robust MPI-set so that the path will reach the robust MPI-set in N_step. 
+% The robust MPC guidances the path inside the robust MPI-set so that the path will reach the robust MPI-set in N_horizon. 
 x = [-7; -2];
-savedir_name = 'results'
-mkdir(savedir_name)
+savedir_name = 'results';
+mkdir(savedir_name);
 
 for i = 1:15
     disp(i)

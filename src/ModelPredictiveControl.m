@@ -11,13 +11,13 @@ classdef ModelPredictiveControl < handle
         
         function obj = ModelPredictiveControl(sys, Xc, Uc, N)
             obj.sys = sys;
-            obj.Xc = Xc
+            obj.Xc = Xc;
             obj.optcon = OptimalControler(sys, Xc, Uc, N);
             obj.solution_cache = [];
         end
 
         function u_next = solve(obj, x_init)
-            obj.optcon.add_initial_eq_constraint(x_init)
+            obj.optcon.add_initial_eq_constraint(x_init);
             [x_nominal_seq, u_nominal_seq] = obj.optcon.solve();
             obj.solution_cache = struct(...
                 'x_init', x_init', 'x_nominal_seq', x_nominal_seq, 'u_nominal_seq', u_nominal_seq);
