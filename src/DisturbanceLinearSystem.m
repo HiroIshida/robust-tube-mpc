@@ -11,7 +11,6 @@ classdef DisturbanceLinearSystem < LinearSystem
             obj = obj@LinearSystem(A, B, Q, R);
 
             obj.W = W;
-%             obj.Z = obj.compute_distinv_set(3, 1.05);
             obj.Z = obj.compute_mrpi_set(1e-4);
         end
 
@@ -39,19 +38,6 @@ classdef DisturbanceLinearSystem < LinearSystem
             end
         end
 
-        function Z_approx = compute_distinv_set(obj, n_order, alpha)
-            % W: Polyhedron of system noise
-            % We could obtain dist_inv_set Z by computing an infinite geometric series,
-            %  which is not practicall to get. So, we approximate this by trancating the polynomial.
-            Z_approx = obj.W;
-            for n = 1:n_order
-                Z_approx = Z_approx + obj.Ak^n*obj.W;
-            end
-            Z_approx = Z_approx*alpha;
-            % which takes the form of Z = alpha*(W + Ak*W + Ak^2*W + ... Ak^n_ordr*W).
-            % where + denotes Minkowski addition.
-        end
-        
         function Fs = compute_mrpi_set(obj, epsilon)
             % Computes an invariant approximation of the minimal robust positively
             % invariant set for 
