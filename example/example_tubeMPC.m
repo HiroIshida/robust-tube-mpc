@@ -39,7 +39,7 @@ for i = 1:15
     u_next = mpc.solve(x);
     x = disturbance_system.propagate(x, u_next); % additive disturbance is considered inside the method 
     mpc.show_prediction();
-    saveas(gcf, strcat(savedir_name, '/tmpc_seq', number2string(i), '.png'));
+    saveas(gcf, strcat(savedir_name, '/tmpc_seq', number2string(i), '.png')); % removing this line makes the code much faster
     clf;
 end
 
