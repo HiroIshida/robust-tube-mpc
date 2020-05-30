@@ -20,7 +20,6 @@ classdef DisturbanceLinearSystem < LinearSystem
             x_new = propagate@LinearSystem(obj, x, u) + w;
         end
 
-
     end
 
     methods (Access = public)
@@ -53,40 +52,36 @@ classdef DisturbanceLinearSystem < LinearSystem
             % where + denotes Minkowski addition.
         end
         
-        function Fs = compute_mrpi_set(obj,  epsilon)
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function Fs = compute_mrpi_set(obj, epsilon)
             % Computes an invariant approximation of the minimal robust positively
             % invariant set for 
             % x^{+} = Ax + w with w \in W
             % according to Algorithm 1 in 'Invariant approximations of
             % the minimal robust positively invariant set' by Rakovic et al. 
             % Requires a matrix A, a Polytope W, and a tolerance 'epsilon'.  
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             [nx,~] = size(obj.Ak); 
-            s  = 0; 
-            alpha  = 1000;
+            s = 0; 
+            alpha = 1000;
             Ms = 1000;
-            E  = eye(nx);
+            E = eye(nx);
             it = 0;
-            while( alpha > epsilon/(epsilon+Ms)  )
-              s    = s+1;
-              alpha    = max(obj.W.support(obj.Ak^s*(obj.W.A)')./obj.W.b);
-              mss  = zeros(2*nx,1);
-              for i = 1:s
-                mss = mss+obj.W.support([obj.Ak^i -obj.Ak^i]);
-              end
-              Ms = max(mss);
-              it = it+1;
+            while(alpha > epsilon/(epsilon + Ms))
+                s = s+1;
+                alpha = max(obj.W.support(obj.Ak^s*(obj.W.A)')./obj.W.b);
+                mss = zeros(2*nx,1);
+                for i = 1:s
+                    mss = mss+obj.W.support([obj.Ak^i, -obj.Ak^i]);
+                end
+                Ms = max(mss);
+                it = it+1;
             end
 
             Fs = obj.W;
             for i =1:s-1
-              Fs = Fs+obj.Ak^i*obj.W;
+                Fs = Fs+obj.Ak^i*obj.W;
             end
             Fs = (1/(1-alpha))*Fs;
         end
-        
-      
 
     end
 end
