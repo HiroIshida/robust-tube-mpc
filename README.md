@@ -1,9 +1,6 @@
 # Robust Model Predictive Control Using Tube
 This repository includes examples for the tube model predictive control (tube-MPC)[1] as well as the generic model predictive control (MPC) written in MATLAB.
 
-## For user
-It would be really really really helpful if you could report some bug or feature request even if it's a tiny one. For those who has github account write an issue or pull request for this repo, and for those who doesn't feel free to send me an email. The address is: `spitfire.docomo@` plus trivial google one.
-
 ## Requirement
 
 1) optimization_toolbox (matlab)<br>
