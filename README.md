@@ -7,6 +7,8 @@ This repository includes examples for the tube model predictive control (tube-MP
 2) control_toolbox (matlab)<br>
 3) Multi-Parametric Toolbox 3 (open-source and freely available at http://people.ee.ethz.ch/~mpt/3/)
 
+## Feedback, bug reports, contributions
+If you find this package helpful, giving a "star" to this repositry will be a happy feedback for me! If you find a bug, or have more broader kind of quession about tube MPC,please post that in the [issue page](https://github.com/HiroIshida/robust-tube-mpc/issues). I will try hard to respond to questions via e-mail but, I **strongly recommend** do it in the issue page. It's much easier for me to keep myself on track.
 
 ## Usage
 See `example/example_tubeMPC.m` and `example/example_MPC.m` for the tube-MPC and generic MPC, respectively. Note that every inequality constraint here is expressed as a convex set. For example, the constraints on the state `Xc` is specified as a rectangular, which is constructed with 4 vertexes. When considering a 1-dim input `Uc`, `Uc` will be specified by min and max value (i.e. `u∊[u_min, u_max]`), so it will be constructed by 2 vertexes. For more detail, please see the example codes.
