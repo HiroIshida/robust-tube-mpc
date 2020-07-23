@@ -1,0 +1,84 @@
+\documentclass[15pt]{article}
+\usepackage{cancel}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{amsthm}
+\usepackage{amssymb} %symbols for mapping
+\usepackage{amsfonts}
+\usepackage{mathptmx}
+\usepackage{bm}
+\usepackage{framed}
+\usepackage{geometry}
+\geometry{left=20mm,right=20mm,top=20mm,bottom=20mm}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{color}
+\usepackage{comment}
+\usepackage{hyperref}
+\newcommand{\argmax}{\mathop{\rm argmax}\limits}
+\newcommand{\argmin}{\mathop{\rm argmin}\limits}
+\newcommand{\mymax}{\mathop{\rm max}\limits}
+\newcommand{\mymin}{\mathop{\rm min}\limits}
+\newcommand{\np}{\mathcal{N}_p}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=matlab,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\hypersetup{
+  urlcolor=cyan
+}
+\begin{document}
+\begin{center}
+  \textbf{Possible extension to distributed MPC} 
+\end{center}
+
+Let just consider $x_p$ and $x_q$ at a particular time step. For simplicity, let me remove the time index and the bar notation. Also, 
+\begin{align}
+  \sum_{q\in \np}(x_q -x_p)^T Q (x_q - x_p) &= \sum_{q \in \np} \left( x_p^T Q x_p + - 2 x_q^T Q x_p + x_q^T Q x_q  \right) \\
+   & = (\#\np) x_p^T Q x_p - 2 \left[ \sum_{q\in \np} x_q^T Q \right] ^T x_p + \sum_{q\in \np} x_q^T Q x_q
+\end{align}
+Letting $A = (\#\np) Q$, $b = -2\left[ \sum_{q\in \np} x_q^T Q \right] ^T$ and $c = \sum_{q\in \np} x_q^T Q x_q$, we now have the form of 
+\[
+  x_p^TAx_p + b x_p + c
+\]
+We have $N$ (number of waypoints of trajectory) of this. Note that you can do the same thing for $P$(for terminal cost) to make $A_f, b_f, c_f$. But for simplicity, let us just consider $P=Q$. Let me denote $X:=[x_{p_1}^T, \ldots x_{p_N}^T]^T$ (the path) and input sequence $U:=[u_{p_1}^T, \ldots, u_{p_N}^T]^T$. Also, let me write $S:=[X^T, U^T]^T$. Then the total objective function $J(X, U)$ will be 
+\begin{align}
+  J(X, U) &= \sum_{k\in [N]} \left( x_{p_k}^T A x_{p_k} + b x_{p_k} + c \right) + \sum_{k\in[N]} u_{p_k}^TQu_{p_{k}} \\
+  &= \left( X^T \tilde{A} X + \tilde{b} X + \tilde{c} \right)  + U^T \tilde{R} U \\
+  &= S^T \mathrm{diag}(\tilde{A}, \tilde{R}) S + [\tilde{b}, \mathrm{zeros}]^T S + \tilde{c}\\
+\end{align} 
+wher $\tilde{A} = \mathrm{diag}(A, \ldots, A)$, $\tilde{B} = [b, \ldots, b]$, $\tilde{c}=\sum_{i\in [N]}^{} c$ and $\tilde{R} = \mathrm{diag}(R, \ldots, R)$. 
+
+In my original implementation, the cost $J$ is expressed by $S^T H S$ and $H$ is constructed by the following:
+\begin{lstlisting}
+function H = construct_costfunction(obj)
+    % compute H
+    Q_block = [];
+    R_block = [];
+    for itr=1:obj.N
+        Q_block = blkdiag(Q_block, obj.sys.Q);
+        R_block = blkdiag(R_block, obj.sys.R);
+    end
+    H = blkdiag(Q_block, obj.sys.P, R_block);
+end
+\end{lstlisting}
+So first you should replace Q\_block and R\_block in final line by $\tilde{Q}$ and $\tilde{R}$. As for $obj.sys.P$ you can do the same. Note that in this setting, we have $[\tilde{b}, \mathrm{zeros}]^TS$ and $tilde{c}$. So, just compute then in the constructor when you make `OptimalControler` instance and then pass them to `quadprog` (MATLAB's quadprog accept the form of $x^T A x + b^Tx$).
+\end{document}
