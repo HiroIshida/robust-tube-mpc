@@ -3,3 +3,5 @@ old/
 *.asv
 example/results/
 
+pathdef.m
+/tbxmanager
