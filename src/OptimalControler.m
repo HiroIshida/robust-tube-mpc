@@ -69,19 +69,8 @@ classdef OptimalControler < handle
             [C_eq1, C_eq2] = obj.constraint_manager.combine_all_eq_constraints();
             [C_ineq1, C_ineq2] = obj.constraint_manager.combine_all_ineq_constraints();
 
-            C_ineq1_relaxed = C_ineq1;
             options = optimoptions('quadprog', 'Display', 'none');
-            itr = 0;
-            while(quadprog_solved ~=1 )
-                [var_optim, ~, exitflag] = quadprog(obj.H, [], C_ineq1_relaxed, C_ineq2, C_eq1, C_eq2, [], [], [], options);
-                
-                quadprog_solved = (exitflag==1);
-                C_ineq1_relaxed = C_ineq1_relaxed*0.999;
-                itr = itr + 1;
-                if (itr>10)
-                    error('Not feasible');
-                end
-            end
+            [var_optim, ~, exitflag] = quadprog(obj.H, [], C_ineq1, C_ineq2, C_eq1, C_eq2, [], [], [], options);
             x_seq = reshape(var_optim(1:obj.sys.nx*(obj.N+1)), obj.sys.nx, obj.N+1);
             u_seq = reshape(var_optim(obj.sys.nx*(obj.N+1)+1:obj.n_opt), obj.sys.nu, obj.N);
             
