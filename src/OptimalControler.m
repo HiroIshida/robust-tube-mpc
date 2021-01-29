@@ -65,7 +65,6 @@ classdef OptimalControler < handle
         end
         
         function [x_seq, u_seq] = solve(obj)
-            quadprog_solved = 0;
             [C_eq1, C_eq2] = obj.constraint_manager.combine_all_eq_constraints();
             [C_ineq1, C_ineq2] = obj.constraint_manager.combine_all_ineq_constraints();
 
@@ -73,9 +72,15 @@ classdef OptimalControler < handle
             [var_optim, ~, exitflag] = quadprog(obj.H, [], C_ineq1, C_ineq2, C_eq1, C_eq2, [], [], [], options);
             x_seq = reshape(var_optim(1:obj.sys.nx*(obj.N+1)), obj.sys.nx, obj.N+1);
             u_seq = reshape(var_optim(obj.sys.nx*(obj.N+1)+1:obj.n_opt), obj.sys.nu, obj.N);
-            
+
+            data = struct('C_eq1', C_eq1, 'C_eq2', C_eq2,... 
+                'C_ineq1', C_ineq1, 'C_ineq2', C_ineq2,...
+                'H', obj.H, 'sol', var_optim);
+            jdata = jsonencode(data);
+            fileid = fopen('qp_problem.json', 'w');
+            fprintf(fileid, jdata)
+            fclose(fileid)
         end
-        
     end
     
     %% Methods Used in Constoructor
